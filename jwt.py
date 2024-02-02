@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 from jose import JWTError, jwt
 import uuid
 
-SECRET_KEY = "1"
+SECRET_KEY = "123456789"
 ALGORITHM = "HS256"
 
 
@@ -19,8 +19,7 @@ def create_token():
 
 def verify_token(token: str):
     try:
-        payload = jwt.decode(token, SECRET_KEY)
-        print(payload.get("token"))
+        jwt.decode(token, SECRET_KEY)
         return True
     except BaseException:
         return False
@@ -39,3 +38,7 @@ def renew_token(token: str):
             return encoded_jwt
         else:
             return create_token()
+
+
+def decode_token(token: str):
+    return jwt.decode(token, SECRET_KEY)
