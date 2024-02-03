@@ -1,69 +1,98 @@
 <script setup>
-  import { IconFileTypeDocx, IconBackspace, IconFileTypeDoc , IconFileTypePdf} from '@tabler/icons-vue';
-  const props = defineProps({
+import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf} from '@tabler/icons-vue';
+import axios from "axios";
+import config from "@/assets/config.js";
+import {useMessage} from 'naive-ui'
+import {ElMessage} from 'element-plus'
+
+const props = defineProps({
   fileList: {
     type: Object
   }
 })
-  const deleteFile = {
 
-  }
+const removeFile = (filename, index) => {
+  axios.post(config.baseURL + "/uploadfile/remove", {
+    "filename": filename
+  }, {
+    headers: {
+      'Accept': 'application/json',
+      "Authentication": window.localStorage.getItem("token")
+
+    }
+  }).then(res => {
+    if (res.data.message === "success") {
+      props.fileList.splice(index, 1)
+    }
+  }).catch(error => {
+        ElMessage.error("删除失败")
+      }
+  )
+}
 </script>
 
 <template>
-<!--  <TransitionGroup name="list" tag="ul">-->
-<!--  <div class="upload-file-list" v-for="item in valueData">-->
-<!--    <ul class="upload-file-info">-->
-<!--      <icon-file-type-docx></icon-file-type-docx>-->
-<!--      <span class="file-name">{{item.name}}</span>-->
-<!--    </ul>-->
-<!--  </div>-->
-<!--  </TransitionGroup>-->
+  <!--  <TransitionGroup name="list" tag="ul">-->
+  <!--  <div class="upload-file-list" v-for="item in valueData">-->
+  <!--    <ul class="upload-file-info">-->
+  <!--      <icon-file-type-docx></icon-file-type-docx>-->
+  <!--      <span class="file-name">{{item.name}}</span>-->
+  <!--    </ul>-->
+  <!--  </div>-->
+  <!--  </TransitionGroup>-->
   <div class="wrapper">
-  <TransitionGroup name="list" tag="ul" class="upload-file-list">
-  <li v-for="item in fileList" :key="item">
-    <div class="upload-file-info">
-      <div>
-        <icon-file-type-docx v-if="item.name.split('.')[item.name.split('.').length - 1] === 'docx'"></icon-file-type-docx>
-        <IconFileTypeDoc v-else-if="item.name.split('.')[item.name.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
-        <IconFileTypePdf v-else></IconFileTypePdf>
-
-<!--        狗屎代码，要重写-->
-        <span class="file-name">{{item.name}}</span>
-      </div>
-      <IconBackspace @click="console.log(item.name)"></IconBackspace>
-    </div>
-  </li>
-</TransitionGroup>
-    </div>
+    <TransitionGroup name="list" tag="ul" class="upload-file-list">
+      <li v-for="(item, index) in fileList" :key="item">
+        <div class="upload-file-info">
+          <div>
+            <icon-file-type-docx
+                v-if="item.name.split('.')[item.name.split('.').length - 1] === 'docx'"></icon-file-type-docx>
+            <IconFileTypeDoc
+                v-else-if="item.name.split('.')[item.name.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
+            <IconFileTypePdf v-else></IconFileTypePdf>
+            <!--        狗屎代码，要重写-->
+            <span class="file-name">{{ item.name }}</span>
+          </div>
+          <IconBackspace @click="removeFile(item.name, index)"></IconBackspace>
+        </div>
+      </li>
+    </TransitionGroup>
+  </div>
 </template>
 
 
 <style scoped>
-  .file-name {
-    padding: 8px;
-  }
-  .upload-file-info {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 0;
-    animation: fade 2s linear 0s infinite;
-  }
-  .upload-file-list {
-    list-style: none;
-    padding:0; margin:0;
-  }
-  .upload-file-list {
-    padding: 6px;
-  }
-  .wrapper {
-    margin: 6px;
-  }
-  .list-enter-active,
+.file-name {
+  padding: 8px;
+}
+
+.upload-file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  animation: fade 2s linear 0s infinite;
+}
+
+.upload-file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.upload-file-list {
+  padding: 6px;
+}
+
+.wrapper {
+  margin: 6px;
+}
+
+.list-enter-active,
 .list-leave-active {
   transition: all 0.5s ease;
 }
+
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
