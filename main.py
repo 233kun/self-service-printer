@@ -4,6 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from routers import user
 import jwt
+from doc_convert import doc_convert
 
 app = FastAPI()
 app.include_router(user.router)
@@ -18,9 +19,8 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    # return {"message": jwt.verify_token()}
-    # return {"message": jwt.create_token()}
-    return {"message": jwt.renew_token()}
+    doc_convert("c95f7428-182a-4dbe-96e9-ae1faadaa7c5")
+    return {"message": "1"}
 
 
 @app.get("/hello/{name}")

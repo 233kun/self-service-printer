@@ -75,22 +75,31 @@ const chooseFile = () => {
 }
 const inputFileChange = () => {
   data.files = data.inputFile.files
-  for (var length = data.files.length, i = 0; i < length; i++) {
+  let i = 0
+  for (let length = data.files.length; i < length; i++) {
     const uploadFile = new FormData();
     uploadFile.append("file", data.files[i]);
-    axios.put(config.baseURL + "/uploadfile/", uploadFile, {
+    axios.put(config.baseURL + "/uploadfile", uploadFile, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': "multipart/form-data",
         'Authentication': window.localStorage.getItem("token")
       }
-    }).then(data.fileList.push(
+    }).then(
+        res => {
+          console.log(res)
+          data.fileList.push(
             {
               id: i,
-              name: data.files[i].name,
+              name: data.files[i - 1].name,
               status: "finished"
             }
-        )
+          )
+        }
+    ).catch(
+              error => {
+        ElMessage.error("上传失败")
+      }
     )
   }
 }
