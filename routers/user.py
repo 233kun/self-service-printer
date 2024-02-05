@@ -1,11 +1,15 @@
+import asyncio
 import os.path
 from os import mkdir
 from typing import Annotated
 from urllib.request import Request
 from fastapi import APIRouter, UploadFile, Header
 from pydantic import BaseModel
+from pypdf import PdfReader
 from starlette.middleware.cors import CORSMiddleware
-from globle_var import init_globle_var
+
+import global_var
+from doc_convert import doc_convert
 import jwt
 
 router = APIRouter()
@@ -49,8 +53,6 @@ async def create_upload_file(file: UploadFile, Authentication: Annotated[str | N
     return {"message": "success"}
 
 
-
-
 @router.get("/uploadfile/filelist")
 async def get_folder(Authentication: Annotated[str | None, Header()]):
     if jwt.verify_token(Authentication):
@@ -69,6 +71,19 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         return {"message": "fail"}
 
 
+class IsFinshUpload(BaseModel):
+    isFinish: bool
+
+
+@router.post("/uploadfile/isFinish")  # receive uploading finished signal and begin to convert files
+async def is_finish(isFinshUpload: IsFinshUpload, Authentication: Annotated[str | None, Header()]):
+    if jwt.verify_token(Authentication):
+        if is_finish:
+            payload = jwt.decode_token(Authentication)
+            directory = payload.get("token")
+            convert_task = asyncio.create_task(doc_convert(directory))
+    return {"message": "success"}
+
 class FileToRemove(BaseModel):
     filename: str
 
@@ -83,3 +98,27 @@ async def create_item(fileToRemove: FileToRemove, Authentication: Annotated[str 
     else:
         return {"message": "fail"}
     # return {"message": fileToRemove.filename, "token": Authentication}
+
+
+@router.get("/convert/status")
+async def get_convert_status(Authentication: Annotated[str | None, Header()]):
+    if not jwt.verify_token(Authentication):  # rewrite all the verify function in the future
+        return {"message": "fail"}
+    payload = jwt.decode_token(Authentication)
+    directory = payload.get("token")
+    status = global_var.global_var_getter(directory)
+    return status
+
+
+@router.get("/convert/totalPage")
+async def get_total_page(Authentication: Annotated[str | None, Header()]):
+    if not jwt.verify_token(Authentication):
+        return {"message": "fail"}
+    payload = jwt.decode_token(Authentication)
+    directory = payload.get("token")
+    pages_counter: int
+    converted_filelist = os.listdir(f"save_files/{directory}/converted")
+    for converted_file in converted_filelist:
+        reader = PdfReader(f"save_files/{directory}/converted/{converted_file}")
+        pages_counter = len(reader.pages)
+    return {"messages": pages_counter}

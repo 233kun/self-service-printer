@@ -45,7 +45,17 @@ onMounted(() => {
   checkToken()
 })
 
-
+const test = () => {
+        axios.post(config.baseURL + "/uploadfile/isFinish", {
+    "isFinish": true
+  },{
+        headers: {
+              'Accept': 'application/json',
+        "Content-Type": "application/json",
+    'Authentication': window.localStorage.getItem("token")
+        }
+  })
+}
 const getFileList = () => {
   axios.get(config.baseURL + "/uploadfile/filelist", {
     headers: {
@@ -77,8 +87,8 @@ const inputFileChange = () => {
   data.files = data.inputFile.files
   let i = 0
   for (let length = data.files.length; i < length; i++) {
-    const uploadFile = new FormData();
-    uploadFile.append("file", data.files[i]);
+    const uploadFile = new FormData()
+    uploadFile.append("file", data.files[i])
     axios.put(config.baseURL + "/uploadfile", uploadFile, {
       headers: {
         'Accept': 'application/json',
@@ -95,6 +105,15 @@ const inputFileChange = () => {
               status: "finished"
             }
           )
+          axios.post(config.baseURL + "/uploadfile/isFinish", {
+    "isFinish": true
+  },{
+        headers: {
+              'Accept': 'application/json',
+        "Content-Type": "application/json",
+    'Authentication': window.localStorage.getItem("token")
+        }
+  })
         }
     ).catch(
               error => {
@@ -102,6 +121,7 @@ const inputFileChange = () => {
       }
     )
   }
+
 }
 </script>
 

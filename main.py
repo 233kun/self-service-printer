@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from routers import user
 import jwt
 from doc_convert import doc_convert
+import global_var
 
 app = FastAPI()
 app.include_router(user.router)
@@ -16,11 +17,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+global_var.init()  # init in main function
+global_var.global_var_setter("status", "")
+
 
 @app.get("/")
 async def root():
-    doc_convert("c95f7428-182a-4dbe-96e9-ae1faadaa7c5")
+    await doc_convert("c95f7428-182a-4dbe-96e9-ae1faadaa7c5")
     return {"message": "1"}
+
+
+@app.get("/status")
+async def status():
+    return {"message": global_var.global_var_getter("status")}
 
 
 @app.get("/hello/{name}")
