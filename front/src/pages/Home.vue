@@ -4,12 +4,14 @@ import config from "@/assets/config.js";
 import axios from "axios";
 import FileList from "@/components/FileList.vue";
 import {ElMessage, ElNotification} from 'element-plus'
+import FileInfo from "@/components/FileInfo.vue";
 
 const data = reactive(
     {
       inputFile: null,
       files: null,
-      fileList: []
+      fileList: [],
+      isShowFileInfo: false
     }
 )
 const checkToken = () => {
@@ -46,14 +48,14 @@ onMounted(() => {
 })
 
 const test = () => {
-        axios.post(config.baseURL + "/uploadfile/isFinish", {
+  axios.post(config.baseURL + "/uploadfile/isFinish", {
     "isFinish": true
-  },{
-        headers: {
-              'Accept': 'application/json',
-        "Content-Type": "application/json",
-    'Authentication': window.localStorage.getItem("token")
-        }
+  }, {
+    headers: {
+      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      'Authentication': window.localStorage.getItem("token")
+    }
   })
 }
 const getFileList = () => {
@@ -99,26 +101,26 @@ const inputFileChange = () => {
         res => {
           console.log(res)
           data.fileList.push(
-            {
-              id: i,
-              name: data.files[i - 1].name,
-              status: "finished"
-            }
+              {
+                id: i,
+                name: data.files[i - 1].name,
+                status: "finished"
+              }
           )
           axios.post(config.baseURL + "/uploadfile/isFinish", {
-    "isFinish": true
-  },{
-        headers: {
+            "isFinish": true
+          }, {
+            headers: {
               'Accept': 'application/json',
-        "Content-Type": "application/json",
-    'Authentication': window.localStorage.getItem("token")
-        }
-  })
+              "Content-Type": "application/json",
+              'Authentication': window.localStorage.getItem("token")
+            }
+          })
         }
     ).catch(
-              error => {
-        ElMessage.error("上传失败")
-      }
+        error => {
+          ElMessage.error("上传失败")
+        }
     )
   }
 
@@ -126,31 +128,42 @@ const inputFileChange = () => {
 </script>
 
 <template>
-  <div>
-    <div class="uploader">
+  <div class="wrapper">
+    <div class="uploader-wrapper">
       <n-button type="primary" class="upload-button" @click="chooseFile()">
         <input type="file" multiple id="input-file" v-show="false" @change="inputFileChange">
         <a class="button-text">点击上传文件</a>
       </n-button>
     </div>
-    <FileList :fileList="data.fileList"></FileList>
+    <div class="filelist-wrapper">
+      <FileList :fileList="data.fileList" class="field-list"></FileList>
+    </div>
+    <FileInfo></FileInfo>
   </div>
 </template>
 <style scoed>
-.uploader {
+body {
+
+}
+
+.wrapper {
   display: flex;
-  width: 100%;
-  height: 80px;
-  justify-content: center
+  flex-direction: column;
+}
+
+.uploader-wrapper {
+  display: flex;
+  height: auto;
+  justify-content: center;
 }
 
 .upload-button {
-  width: 330px;
-  height: 100%;
+  width: 90%;
+  padding-top: 15%;
+  padding-bottom: 15%;
   border-radius: 12px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
-  margin-right: auto;
-  margin-left: auto;
+
 }
 
 .button-text {
@@ -158,4 +171,15 @@ const inputFileChange = () => {
   font-size: 24px;
 }
 
+.field-list {
+  width: 90%;
+
+}
+
+.filelist-wrapper {
+  display: flex;
+  justify-content: center;
+
+  width: 100%;
+}
 </style>
