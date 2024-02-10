@@ -6,24 +6,53 @@ import {useMessage} from 'naive-ui'
 import {ElMessage} from 'element-plus'
 import {onBeforeMount, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 
-const props = defineProps({
-  fileList: {
-    type: Object
-  }
+// const props = defineProps({
+//   fileList: {
+//     type: Array
+//   }
+// })
+const props = reactive({
+  fileList: [
+    {
+      id: 0,
+      name: "test.docx",
+      status: "finished"
+    },
+          {
+      id: 0,
+      name: "test.docx",
+      status: "finished"
+    }
+  ]
 })
-watch() => {}
-const getConvertStatus = (number) => {
-  // for (let file in props.fileList) {
-  //   console.log(1)
-  //   files.push(file.name)
-  // }
-  // console.log(files)
-  // axios.post(config.baseURL + "/convert/status/" , {
-  // "files": files
-  // },{
-  //   'Accept': 'application/json',
-  //     "Authentication": window.localStorage.getItem("token")
-  // })
+const data = ref({
+  copies: 1,
+  startPage: 1,
+  endPage: 1,
+  isDoubleSide: false
+})
+const change = () => {
+  console.log(props.fileList)
+}
+
+watch(props.fileList, () => {
+  clearInterval(interval);
+  setInterval(() => {
+    getConvertStatus()
+  }, 5000)
+})
+const getConvertStatus = () => {
+  axios.post(config.baseURL + "/convert/status/", {
+    "files": files
+  }, {
+    'Accept': 'application/json',
+    "Authentication": window.localStorage.getItem("token")
+  }).then((res) => {
+    const filesConvertStatus = res.data.message
+    if (filesConvertStatus.every(true)) {
+      clearInterval(interval)
+    }
+  })
 }
 const removeFile = (filename, index) => {
   axios.post(config.baseURL + "/uploadfile/remove", {
@@ -47,9 +76,9 @@ const removeFile = (filename, index) => {
 <template>
   <div class="wrapper">
     <TransitionGroup name="list" tag="ul" class="upload-file-list">
-      <li v-for="(item, index) in fileList" :key="item">
+      <li v-for="(item, index) in props.fileList" :key="item">
         <div class="upload-file-info">
-          <div>
+          <div class="icon-and-filename">
             <icon-file-type-docx
                 v-if="item.name.split('.')[item.name.split('.').length - 1] === 'docx'"></icon-file-type-docx>
             <IconFileTypeDoc
@@ -59,6 +88,30 @@ const removeFile = (filename, index) => {
             <span class="file-name">{{ item.name }}</span>
           </div>
           <IconBackspace @click="removeFile(item.name, index)"></IconBackspace>
+        </div>
+        <div class="print-info">
+          <div class="print-copies">
+            <a>打印份数</a>
+            <el-input-number v-model="num" :min="1" :max="10" @change="handleChange"/>
+          </div>
+          <div class="print-range">
+            <a>打印范围</a>
+            <div class="input-form-wrapper">
+              <el-input class="input-form" v-model="data.startPage"/>
+              <a class="slash"> / </a>
+              <el-input class="input-form" v-model="data.endPage"/>
+            </div>
+          </div>
+          <div class="print-side">
+            <a>双面打印</a>
+            <div>
+            <a>单面</a>
+            <el-switch v-model="data.isDoubleSide"
+                       style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949">
+            </el-switch>
+            <a>双面</a>
+              </div>
+          </div>
         </div>
       </li>
     </TransitionGroup>
@@ -71,26 +124,67 @@ const removeFile = (filename, index) => {
   padding: 8px;
 }
 
-.upload-file-info {
+.icon-and-filename {
   display: flex;
   align-items: center;
+}
+
+.upload-file-info {
+  display: flex;
   justify-content: space-between;
-  padding: 6px 0;
+  align-items: center;
   animation: fade 2s linear 0s infinite;
 }
 
 .upload-file-list {
   list-style: none;
-  padding: 0;
-  margin: 0;
+  padding: 12px;
 }
 
-.upload-file-list {
-  padding: 6px;
+
+.print-copies {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.print-range {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.print-side {
+  height: 44px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .wrapper {
-  margin: 6px;
+  margin: 12px;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
+}
+
+.input-form {
+  width: 50px;
+}
+
+.slash {
+  font-size: 20px;
+}
+
+.input-form-wrapper {
+  display: flex;
+  flex-direction: row;
+
+}
+
+.wrapper {
+  background: #FFFFFF;
 }
 
 .list-enter-active,
