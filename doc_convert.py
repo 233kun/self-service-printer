@@ -3,6 +3,7 @@ import win32com.client
 
 import global_var
 
+
 async def doc_convert(folder: str):
     filelist = os.listdir(f"save_files/{folder}/raw")
     converted_filelist = os.listdir(f"save_files/{folder}/converted")
@@ -23,8 +24,8 @@ async def doc_convert(folder: str):
         try:
             doc.SaveAs(output_pdf, FileFormat=wdFormatPDF)
         except BaseException:
-            global_var.global_var_setter(folder + filename, "error")
+            global_var.global_var_setter(folder, "error")
         finally:
             doc.Close()
             word.Quit()
-        global_var.global_var_setter(folder + filename,"success")
+        global_var.global_var_setter(folder, "success")

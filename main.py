@@ -23,8 +23,7 @@ global_var.global_var_setter("status", "")
 
 @app.get("/")
 async def root():
-    await doc_convert("c95f7428-182a-4dbe-96e9-ae1faadaa7c5")
-    return {"message": "1"}
+    return {"message": {"a": 1,"b": 1}}
 
 
 @app.get("/status")

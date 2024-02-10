@@ -11,7 +11,7 @@ const data = reactive(
       inputFile: null,
       files: null,
       fileList: [],
-      isShowFileInfo: false
+      isShowFileInfo: false,
     }
 )
 const checkToken = () => {
@@ -99,7 +99,6 @@ const inputFileChange = () => {
       }
     }).then(
         res => {
-          console.log(res)
           data.fileList.push(
               {
                 id: i,
@@ -138,12 +137,11 @@ const inputFileChange = () => {
     <div class="filelist-wrapper">
       <FileList :fileList="data.fileList" class="field-list"></FileList>
     </div>
-    <FileInfo></FileInfo>
   </div>
 </template>
 <style scoed>
 body {
-
+  background-color: #F2F2F2;
 }
 
 .wrapper {
@@ -172,14 +170,9 @@ body {
 }
 
 .field-list {
-  width: 90%;
-
 }
 
 .filelist-wrapper {
-  display: flex;
-  justify-content: center;
-
   width: 100%;
 }
 </style>
