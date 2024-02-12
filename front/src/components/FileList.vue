@@ -7,70 +7,19 @@ import {ElMessage} from 'element-plus'
 import {onBeforeMount, onBeforeUnmount, onMounted, onUnmounted, onUpdated, reactive, ref, toRef, watch} from "vue";
 
 const props = defineProps({
-  fileList: null
+  fileList: {
+    type: Object
+  }
 })
-// const props = reactive({
-//   fileList: [
-//     {
-//       id: 0,
-//       name: "test.docx",
-//       status: "finished"
-//     },
-//     {
-//       id: 0,
-//       name: "test.docx",
-//       status: "finished"
-//     }
-//   ]
-// })
 const data = ref({
   copies: 1,
-  startPage: 1,
-  endPage: 1,
+  startPage: "",
+  endPage: "",
   isDoubleSide: false,
   loading: true,
   isConvertFinished: false
 })
-const change = () => {
-  console.log(props.fileList)
-}
-onUpdated(() => {
-    console.log(11)
 
-})
-// watch(props.fileList, (newX) => {
-//   console.log(newX)
-//   // console.log(1)
-//   // clearInterval(interval);
-//   // setInterval(() => {
-//   //   getConvertStatus()
-//   // }, 5000)
-// }, { deep: true })
-const toRefStrHtml = toRef(props, "fileList");
-
-watch(toRefStrHtml, () => {
-  // ......
-  // if (toRefStrHtml === null)
-  console.log(toRefStrHtml.value)
-  console.log(22)
-},{deep: true , immediate: false})
-const getConvertStatus = () => {
-  axios.post(config.baseURL + "/convert/status/", {
-    "files": files
-  }, {
-    'Accept': 'application/json',
-    "Authentication": window.localStorage.getItem("token")
-  }).then((res) => {
-    if (res.data.message === "processing") {
-      data.isConvertFinished = true
-      return
-    }
-    if (res.data.message === "success") {
-      data.isConvertFinished = false
-      return
-    }
-  })
-}
 const removeFile = (filename, index) => {
   axios.post(config.baseURL + "/uploadfile/remove", {
     "filename": filename
@@ -81,7 +30,7 @@ const removeFile = (filename, index) => {
     }
   }).then(res => {
     if (res.data.message === "success") {
-      props.fileList.splice(index, 1)
+      delete props.fileList[filename]
     }
   }).catch(error => {
         ElMessage.error("删除失败")
@@ -94,18 +43,17 @@ const removeFile = (filename, index) => {
   <div class="wrapper">
     <TransitionGroup name="list" tag="ul" class="upload-file-list">
       <li v-for="(item, index) in props.fileList" :key="item">
-        <div class="test" v-loading="data.isConvertFinished">
+        <div class="test" v-loading="item.convert_stata==='success'?false:item.convert_stata==='error'?false:true">
           <div class="upload-file-info">
             <div class="icon-and-filename">
               <icon-file-type-docx
-                  v-if="item.name.split('.')[item.name.split('.').length - 1] === 'docx'"></icon-file-type-docx>
+                  v-if="item.filename.split('.')[item.filename.split('.').filename - 1] === 'docx'"></icon-file-type-docx>
               <IconFileTypeDoc
-                  v-else-if="item.name.split('.')[item.name.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
+                  v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
               <IconFileTypePdf v-else></IconFileTypePdf>
-              <!--        狗屎代码，要重写-->
-              <span class="file-name">{{ item.name }}</span>
+              <span class="file-name">{{ item.filename }}</span>
             </div>
-            <IconBackspace @click="removeFile(item.name, index)"></IconBackspace>
+            <IconBackspace @click="removeFile(item.filename, index)"></IconBackspace>
           </div>
           <div class="print-info">
             <div class="print-copies">
@@ -115,9 +63,9 @@ const removeFile = (filename, index) => {
             <div class="print-range">
               <a>打印范围</a>
               <div class="input-form-wrapper">
-                <el-input class="input-form" v-model="data.startPage"/>
+                <el-input class="input-form" v-model="data.startPage" placeholder="1"/>
                 <a class="slash"> / </a>
-                <el-input class="input-form" v-model="data.endPage"/>
+                <el-input class="input-form" v-model="data.endPage" :placeholder="item.total_pages"/>
               </div>
             </div>
             <div class="print-side">

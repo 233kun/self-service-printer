@@ -10,8 +10,8 @@ const data = reactive(
     {
       inputFile: null,
       files: null,
-      fileList: [],
-      isShowFileInfo: false,
+      fileList: {},
+      isShow: false
     }
 )
 const checkToken = () => {
@@ -45,6 +45,7 @@ onMounted(() => {
       document.getElementById("input-file")
   )
   checkToken()
+
 })
 
 const test = () => {
@@ -59,28 +60,36 @@ const test = () => {
   })
 }
 const getFileList = () => {
-  axios.get(config.baseURL + "/uploadfile/filelist", {
+  const getRequest = axios.get(config.baseURL + "/uploadfile/filelist", {
     headers: {
       "Authentication": window.localStorage.getItem("token")
     }
   }).then(res => {
+    console.log(res)
     if (res.data.message === "fail") {
       return
     }
-    const fileList = [];
-    for (var i = 0; i < res.data.message.length; i++) {
-      fileList[i] = {
-        id: i,
-        name: res.data.message[i],
-        status: "finished"
+    data.fileList = res.data.message
+    data.isShow = true
+    let isConvertFinished = true
+    for (let item in res.data.message) {
+      if (item.convert_stata === "processing") {
+        isConvertFinished = false
+        break
+      }
+      if (item.convert_stata === "error") {
+        isConvertFinished = false
       }
     }
-    data.fileList = data.fileList.concat(fileList)
+    if (isConvertFinished === true) {
+        clearInterval(createInterval)
+    }
   }).catch(
       error => {
         ElMessage.error("初始化失败：error code 3")
       }
   )
+  const createInterval = setInterval(getRequest, 3000)
 }
 const chooseFile = () => {
   data.inputFile.click()
@@ -99,30 +108,27 @@ const inputFileChange = () => {
       }
     }).then(
         res => {
-          data.fileList.push(
-              {
-                id: i,
-                name: data.files[i - 1].name,
-                status: "finished"
-              }
-          )
-          axios.post(config.baseURL + "/uploadfile/isFinish", {
-            "isFinish": true
-          }, {
-            headers: {
-              'Accept': 'application/json',
-              "Content-Type": "application/json",
-              'Authentication': window.localStorage.getItem("token")
-            }
-          })
-        }
-    ).catch(
-        error => {
-          ElMessage.error("上传失败")
+          data.fileList[data.files[i - 1].name] = {
+            "filename": data.files[i - 1].name,
+            "convert_stata": "processing"
+          }
         }
     )
   }
-
+  axios.post(config.baseURL + "/uploadfile/isFinish", {
+    "isFinish": true
+  }, {
+    headers: {
+      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      'Authentication': window.localStorage.getItem("token")
+    }
+  }).catch(
+      error => {
+        ElMessage.error("上传失败")
+      }
+  )
+  getFileList()
 }
 </script>
 
@@ -134,7 +140,7 @@ const inputFileChange = () => {
         <a class="button-text">点击上传文件</a>
       </n-button>
     </div>
-    <div class="filelist-wrapper">
+    <div v-if="data.isShow" class="filelist-wrapper">
       <FileList :fileList="data.fileList" class="field-list"></FileList>
     </div>
   </div>
