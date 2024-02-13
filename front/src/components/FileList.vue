@@ -1,5 +1,5 @@
 <script setup>
-import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf} from '@tabler/icons-vue';
+import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf, IconAlertCircle} from '@tabler/icons-vue';
 import axios from "axios";
 import config from "@/assets/config.js";
 import {useMessage} from 'naive-ui'
@@ -36,6 +36,10 @@ const removeFile = (filename, index) => {
         ElMessage.error("删除失败")
       }
   )
+}
+
+watch() {
+
 }
 </script>
 
@@ -79,6 +83,10 @@ const removeFile = (filename, index) => {
               </div>
             </div>
           </div>
+          <div class="warning">
+            <IconAlertCircle>
+            </IconAlertCircle>
+          </div>
         </div>
       </li>
     </TransitionGroup>
@@ -118,7 +126,6 @@ const removeFile = (filename, index) => {
   margin: auto;
 }
 
-
 .print-copies {
   display: flex;
   justify-content: space-between;
@@ -155,6 +162,10 @@ const removeFile = (filename, index) => {
   display: flex;
   flex-direction: row;
 
+}
+
+.warning {
+  height: 138px;
 }
 
 .wrapper {
