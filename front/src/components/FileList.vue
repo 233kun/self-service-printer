@@ -1,5 +1,5 @@
 <script setup>
-import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf, IconAlertCircle} from '@tabler/icons-vue';
+import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf, IconAlertCircle, IconAlertCircleFilled} from '@tabler/icons-vue';
 import axios from "axios";
 import config from "@/assets/config.js";
 import {useMessage} from 'naive-ui'
@@ -20,6 +20,13 @@ const data = ref({
   isConvertFinished: false
 })
 
+watch(props.fileList, (newX) => {
+  for (let file in props.fileList) {
+    console.log(file.stata)
+  }
+  console.log(`x is ${newX}`)
+})
+
 const removeFile = (filename, index) => {
   axios.post(config.baseURL + "/uploadfile/remove", {
     "filename": filename
@@ -38,9 +45,6 @@ const removeFile = (filename, index) => {
   )
 }
 
-watch() {
-
-}
 </script>
 
 <template>
@@ -49,17 +53,19 @@ watch() {
       <li v-for="(item, index) in props.fileList" :key="item">
         <div class="test" v-loading="item.convert_stata==='success'?false:item.convert_stata==='error'?false:true">
           <div class="upload-file-info">
-            <div class="icon-and-filename">
-              <icon-file-type-docx
-                  v-if="item.filename.split('.')[item.filename.split('.').filename - 1] === 'docx'"></icon-file-type-docx>
-              <IconFileTypeDoc
-                  v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
-              <IconFileTypePdf v-else></IconFileTypePdf>
-              <span class="file-name">{{ item.filename }}</span>
+            <div class="head-warpper">
+              <div class="icon-and-filename">
+              <icon-file-type-docx class="icon" v-if="item.filename.split('.')[item.filename.split('.').filename - 1] === 'docx'"></icon-file-type-docx>
+              <IconFileTypeDoc class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
+              <IconFileTypePdf class="icon" v-else></IconFileTypePdf>
+              <div class="file-name">
+                <a>{{ item.filename }}</a>
+              </div>
+                </div>
+              <IconBackspace class="icon" @click="removeFile(item.filename, index)"></IconBackspace>
             </div>
-            <IconBackspace @click="removeFile(item.filename, index)"></IconBackspace>
           </div>
-          <div class="print-info">
+          <div class="print-info" :style="item.convert_stata==='error'?'display: none':'display: unset'">
             <div class="print-copies">
               <a>打印份数</a>
               <el-input-number v-model="num" :min="1" :max="10" @change="handleChange"/>
@@ -83,9 +89,10 @@ watch() {
               </div>
             </div>
           </div>
-          <div class="warning">
-            <IconAlertCircle>
-            </IconAlertCircle>
+          <div class="warning" v-if="item.convert_stata === 'error'">
+            <div class="warning-text-and-icon"></div>
+            <IconAlertCircleFilled class="warning-icon"></IconAlertCircleFilled >
+            <a class="warning-text">无法读取文件</a>
           </div>
         </div>
       </li>
@@ -97,11 +104,28 @@ watch() {
 <style scoped>
 .file-name {
   padding: 8px;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.head-warpper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .icon-and-filename {
   display: flex;
   align-items: center;
+  overflow: auto;
+
+}
+
+.icon {
+  width: 48px;
+  height: 48px;
 }
 
 .test {
@@ -114,7 +138,6 @@ watch() {
 
 .upload-file-info {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   animation: fade 2s linear 0s infinite;
 }
@@ -124,6 +147,9 @@ watch() {
   width: 90%;
   padding: 0px;
   margin: auto;
+}
+
+.print-info {
 }
 
 .print-copies {
@@ -146,7 +172,13 @@ watch() {
   justify-content: space-between;
   align-items: center;
 }
-
+.warning {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 .wrapper {
 }
 
@@ -166,6 +198,14 @@ watch() {
 
 .warning {
   height: 138px;
+}
+
+.warning-icon {
+    width: 64px; height: 64px; color: #d03050
+}
+
+.warning-text {
+  font-size: 24px;
 }
 
 .wrapper {
