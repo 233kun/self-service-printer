@@ -11,6 +11,7 @@
   "dependencies": {
     "@tabler/icons-vue": "^2.46.0",
     "axios": "^1.6.7",
+    "decimal.js": "^10.4.3",
     "element-plus": "^2.5.5",
     "vue": "^3.3.11",
     "vue-router": "^4.2.5"

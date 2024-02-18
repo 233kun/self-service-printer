@@ -68,21 +68,21 @@ const removeFile = (filename, index) => {
           <div class="print-info" :style="item.convert_stata==='error'?'display: none':'display: unset'">
             <div class="print-copies">
               <a>打印份数</a>
-              <el-input-number v-model="num" :min="1" :max="10" @change="handleChange"/>
+              <el-input-number v-model="item.print_copies" :min="1"/>
             </div>
             <div class="print-range">
               <a>打印范围</a>
               <div class="input-form-wrapper">
-                <el-input class="input-form" v-model="data.startPage" placeholder="1"/>
+                <el-input class="input-form" v-model="item.print_range_start" placeholder="1"/>
                 <a class="slash"> / </a>
-                <el-input class="input-form" v-model="data.endPage" :placeholder="item.total_pages"/>
+                <el-input class="input-form" v-model="item.print_range_end" :placeholder="item.total_pages"/>
               </div>
             </div>
             <div class="print-side">
               <a>双面打印</a>
               <div>
                 <a>单面</a>
-                <el-switch v-model="data.isDoubleSide"
+                <el-switch v-model="item.print_side"
                            style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949">
                 </el-switch>
                 <a>双面</a>

@@ -6,7 +6,6 @@ import router from "@/router.js";
 import naive from "naive-ui";
 import elementPlus from "element-plus"
 
-
 const app = createApp(App)
 app.use(router)
 app.use(naive)

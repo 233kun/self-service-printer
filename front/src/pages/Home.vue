@@ -5,6 +5,8 @@ import axios from "axios";
 import FileList from "@/components/FileList.vue";
 import {ElMessage, ElNotification} from 'element-plus'
 import FileInfo from "@/components/FileInfo.vue";
+import PayButton from "@/components/PayButton.vue";
+import PriceCounter from "@/components/PriceCounter.vue";
 
 const data = reactive(
     {
@@ -100,7 +102,7 @@ const inputFileChange = () => {
   const uploadFile = new FormData()
   for (let length = data.files.length, i = 0; i < length; i++) {
     uploadFile.append("files", data.files[i])
-          data.fileList[data.files[i].name] = {
+        data.fileList[data.files[i].name] = {
         "filename": data.files[i].name,
         "convert_stata": "processing"
       }
@@ -123,6 +125,7 @@ const inputFileChange = () => {
 
 <template>
   <div class="wrapper">
+    <div>
     <div class="uploader-wrapper">
       <n-button type="primary" class="upload-button" @click="chooseFile()">
         <input type="file" multiple id="input-file" v-show="false" @change="inputFileChange">
@@ -131,23 +134,36 @@ const inputFileChange = () => {
     </div>
     <div v-if="data.isShow" class="filelist-wrapper">
       <FileList :fileList="data.fileList" class="field-list"></FileList>
+     </div>
+      </div>
+    <div class="pay-area">
+      <div class="price-counter">
+        <PriceCounter :fileList="data.fileList"></PriceCounter>
+      </div>
+      <div class="pay-bottom">
+        <pay-button></pay-button>
+      </div>
     </div>
   </div>
 </template>
 <style scoed>
-body {
+html, body, #app{
   background-color: #F2F2F2;
+    height: 100%
 }
 
 .wrapper {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 }
 
 .uploader-wrapper {
   display: flex;
   height: auto;
   justify-content: center;
+  min-width: 100%;
 }
 
 .upload-button {
@@ -169,5 +185,29 @@ body {
 
 .filelist-wrapper {
   width: 100%;
+}
+
+.pay-area {
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10%;
+  padding-bottom: 10%;
+}
+
+.price-counter {
+  width: 150px;
+  height: 150px;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
+}
+
+.pay-bottom {
+  width: 150px;
+  height: 150px;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
 }
 </style>

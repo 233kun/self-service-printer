@@ -82,10 +82,14 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
                 {
                     file: {
                         "filename": file,
-                        # "convert_stata": global_var.global_var_getter(directory + file),
-                        "convert_stata": "error",
-                        "total_pages": page_number
-                    }
+                        "convert_stata": global_var.global_var_getter(directory + file),
+                        # "convert_stata": "error3..",
+                        "total_pages": page_number,
+                        "print_copies": 1,
+                        "print_range_start": 1,
+                        "print_range_end": page_number,
+                        "print_side": False  # True == single; False == double
+                     }
                 }
             )
         print(states)
