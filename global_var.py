@@ -16,3 +16,7 @@ def global_var_getter(key):
     except:
         print('读取' + key + '失败\r\n')
         return "error"
+
+
+def free_var(key):
+    _global_dict.pop(key)

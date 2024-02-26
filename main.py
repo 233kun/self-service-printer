@@ -2,13 +2,18 @@ import uvicorn
 from fastapi import FastAPI, UploadFile, Request
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from routers import user
+
+import print_queue
+from routers import user, printer_client
+from routers import pay
 import jwt
 from doc_convert import doc_convert
 import global_var
 
 app = FastAPI()
 app.include_router(user.router)
+app.include_router(pay.router)
+app.include_router(printer_client.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,6 +23,7 @@ app.add_middleware(
 )
 
 global_var.init()  # init in main function
+print_queue.init()
 global_var.global_var_setter("status", "")
 
 

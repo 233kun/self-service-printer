@@ -141,7 +141,7 @@ const inputFileChange = () => {
         <PriceCounter :fileList="data.fileList"></PriceCounter>
       </div>
       <div class="pay-bottom">
-        <pay-button></pay-button>
+        <pay-button :fileList="data.fileList"></pay-button>
       </div>
     </div>
   </div>
