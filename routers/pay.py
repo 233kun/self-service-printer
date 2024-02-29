@@ -125,3 +125,4 @@ def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotated[str
     global_var.global_var_setter(f"{out_trade_no}_is_paid", True)
     print_queue.queue_push(out_trade_no)
     return {"message": "success"}
+

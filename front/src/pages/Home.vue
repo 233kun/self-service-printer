@@ -51,15 +51,11 @@ onMounted(() => {
 })
 
 const test = () => {
-  axios.post(config.baseURL + "/uploadfile/isFinish", {
-    "isFinish": true
-  }, {
-    headers: {
-      'Accept': 'application/json',
-      "Content-Type": "application/json",
-      'Authentication': window.localStorage.getItem("token")
-    }
-  })
+  axios.get(config.baseURL + "/").then(
+      res => {
+        console.log(res)
+      }
+  )
 }
 const getFileList = () => {
   const getRequest = axios.get(config.baseURL + "/uploadfile/filelist", {
@@ -124,6 +120,7 @@ const inputFileChange = () => {
 </script>
 
 <template>
+  <button @click="test"></button>
   <div class="wrapper">
     <div>
     <div class="uploader-wrapper">

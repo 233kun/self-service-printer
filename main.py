@@ -2,9 +2,10 @@ import uvicorn
 from fastapi import FastAPI, UploadFile, Request
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from starlette.responses import FileResponse
 
 import print_queue
-from routers import user, printer_client
+from routers import user, printer
 from routers import pay
 import jwt
 from doc_convert import doc_convert
@@ -13,7 +14,7 @@ import global_var
 app = FastAPI()
 app.include_router(user.router)
 app.include_router(pay.router)
-app.include_router(printer_client.router)
+app.include_router(printer.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,7 +30,7 @@ global_var.global_var_setter("status", "")
 
 @app.get("/")
 async def root():
-    return {"message": {"a": 1,"b": 1}}
+    return {"message": "Is empty","file": FileResponse("save_files/9088e7af-b58c-4162-b283-17d8c2d0a3e3/raw/wd-spectools-word-sample-.doc")}
 
 
 @app.get("/status")
