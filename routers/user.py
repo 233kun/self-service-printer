@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from pypdf import PdfReader
 from starlette.middleware.cors import CORSMiddleware
 
-import global_var
+from global_var import global_var_setter, global_var_getter
 from doc_convert import doc_convert
 import jwt
 
@@ -47,19 +47,21 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         mkdir(f"save_files/{directory}")
         mkdir(f"save_files/{directory}/raw")
         mkdir(f"save_files/{directory}/converted")
+
     for file in files:
         with open(f'save_files/{directory}/raw/{file.filename}', "wb") as f:
             f.write(file.file.read())
         with open(f'save_files/{directory}/expire', "wb") as f:
             f.write(str(expire).encode())
-        global_var.global_var_setter(directory + file.filename, "processing")
+        global_var_setter(directory + file.filename, "processing")
+
     convert_task = threading.Thread(doc_convert(directory))
     convert_task.start()
     return {"message": "success"}
 
 
 @router.get("/uploadfile/filelist")
-async def get_folder(Authentication: Annotated[str | None, Header()]):
+async def get_folder(Authentication:Annotated[str | None, Header()]):
     if jwt.verify_token(Authentication):
         payload = jwt.decode_token(Authentication)
         directory = payload.get("token")
@@ -68,13 +70,15 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
             mkdir(f"save_files/{directory}")
             mkdir(f"save_files/{directory}/raw")
             mkdir(f"save_files/{directory}/converted")
-            with open(f'save_files/{directory}/expire', "wb") as f:
-                f.write(str(expire).encode())
+            # with open(f'save_files/{directory}/expire', "wb") as f:
+            #     f.write(str(expire).encode())
+        global_var_setter(f"{directory}_expire", expire)
+
         files = os.listdir(f"save_files/{directory}/raw")
         states = {}
         for file in files:
             page_number = 1
-            if global_var.global_var_getter(directory + file) == "success":
+            if global_var_getter(directory + file) == "success":
                 converted_filename = file.rsplit(".", 1)[0] + ".pdf"
                 reader = PdfReader(f"save_files/{directory}/converted/{converted_filename}")
                 page_number = len(reader.pages)
@@ -82,7 +86,7 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
                 {
                     file: {
                         "filename": file,
-                        "convert_stata": global_var.global_var_getter(directory + file),
+                        "convert_stata": global_var_getter(directory + file),
                         # "convert_stata": "error3..",
                         "total_pages": page_number,
                         "print_copies": 1,
