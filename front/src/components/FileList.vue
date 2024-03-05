@@ -20,13 +20,6 @@ const data = ref({
   isConvertFinished: false
 })
 
-watch(props.fileList, (newX) => {
-  for (let file in props.fileList) {
-    console.log(file.stata)
-  }
-  console.log(`x is ${newX}`)
-})
-
 const removeFile = (filename, index) => {
   axios.post(config.baseURL + "/uploadfile/remove", {
     "filename": filename
@@ -124,8 +117,8 @@ white-space: nowrap;
 }
 
 .icon {
-  width: 48px;
-  height: 48px;
+  width: 28px;
+  height: 28px;
 }
 
 .test {

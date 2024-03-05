@@ -16,6 +16,8 @@ const pay = () => {
         "Content-Type": "application/json",
       'Authentication': window.localStorage.getItem("token")
     }
+  }).then(res => {
+    window.location.href = res.data.message
   })
 }
 </script>

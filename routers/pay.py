@@ -28,7 +28,7 @@ router = APIRouter()
 
 
 class FileList(BaseModel):
-    files: object
+    files: str
 
 
 @router.post("/pay/createBill")
@@ -54,9 +54,9 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
                 price = Dinero(0.18, CNY).multiply(page_number - 1).add(0.2)
 
     logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-    filemode="a",
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        filemode="a",
     )
     logger = logging.getLogger("")
 
@@ -73,7 +73,7 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
 
     model = AlipayTradeCreateModel()
     model.out_trade_no = directory + f"_{seed}"
-    model.total_amount = 0.01 #price.format()
+    model.total_amount = 0.01  # price.format()
     model.subject = "30栋304打印店"
 
     request = AlipayTradePrecreateRequest(biz_model=model)
@@ -96,8 +96,18 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
             filename = file.rsplit(".", 1)[0] + ".pdf"
             os.replace(f"save_files/{directory}/converted/{filename}",
                        f"save_files/print_queue/{directory}_{seed}/{filename}")
+
+            filedict = files.get(file)
+            print_ticket = {"file": filename,
+                            "out_trade_no": f"{directory}_{seed}",
+                            "sides": filedict.get("print_side"),
+                            "ranges": f"{filedict.get("print_range_start")}-{filedict.get("print_range_end")}",
+                            "copies": filedict.get("print_copies")}
+            global_var.global_var_setter(f"{directory}_{seed}_{filename}_print_ticket", print_ticket)
+            print(global_var.global_var_getter(f"{directory}_{seed}_{filename}_print_ticket"))
+            print(f"{directory}_{seed}_{filename}_print_ticket")
         global_var.global_var_setter(f"{directory}_{seed}_expire", datetime.now().timestamp() + 60 * 60 * 2)
-        global_var.global_var_setter(f"{directory}_{seed}_is_paid", False)
+        global_var.global_var_setter(f"{directory}_{seed}_is_paid", False)  # remove this attribute the future
         print(seed)
         # 响应成功的业务处理
         if response.is_success():
@@ -122,7 +132,10 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
 def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotated[str, Form()]):
     if not trade_status == "TRADE_SUCCESS":
         return {"message": "fail"}
-    global_var.global_var_setter(f"{out_trade_no}_is_paid", True)
-    print_queue.queue_push(out_trade_no)
+    global_var.global_var_setter(f"{out_trade_no}_is_paid", True)  # remove this attribute the future
+    files = os.listdir(f"save_files/print_queue/{out_trade_no}")
+    for file in files:
+        print_queue.queue_push(global_var.global_var_getter(f"{out_trade_no}_{file}_print_ticket"))
+        print(global_var.global_var_getter(f"{out_trade_no}_{file}_print_ticket"))
+    global_var.global_var_setter(f"{out_trade_no}_expire", datetime.now().timestamp() + 60 * 15)
     return {"message": "success"}
-

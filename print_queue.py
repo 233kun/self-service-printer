@@ -3,13 +3,21 @@ def init():
     print_queue = []
 
 
-def queue_push(print_task):
-    print_queue.append(print_task)
+def queue_push(print_job):
+    print_queue.append(print_job)
 
 
-def queue_pop(print_task):
-    print_queue.pop(print_task)
+def queue_pop(print_job):
+    print_queue.pop(print_job)
 
 
-def get_task(queue_position):
+def queue_remove(print_job):
+    print_queue.remove(print_job)
+
+
+def get_job(queue_position):
     return print_queue[queue_position]
+
+
+def get_queue_size():
+    return len(print_queue)

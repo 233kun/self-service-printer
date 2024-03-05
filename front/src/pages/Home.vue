@@ -13,7 +13,8 @@ const data = reactive(
       inputFile: null,
       files: null,
       fileList: {},
-      isShow: false
+      isShowFilelist: false,
+      isShowPayArea: false
     }
 )
 const checkToken = () => {
@@ -40,13 +41,23 @@ const checkToken = () => {
   ///////////////////////////////////////////////////////////////////////
   //  获取已保存的文件，放在此是可以让第一次进入网站的用户不用获取                //
   ///////////////////////////////////////////////////////////////////////
-  getFileList()
+  // getFileList()
 }
+
 onMounted(() => {
   data.inputFile = reactive(
       document.getElementById("input-file")
   )
-  checkToken()
+ const pro = new Promise(function(res, err) {
+   res()
+   err()
+})
+  pro.then((res) => {
+    checkToken()
+  }).then((res) => {
+    getFileList()
+  })
+
 
 })
 
@@ -58,7 +69,9 @@ const test = () => {
   )
 }
 const getFileList = () => {
-  const getRequest = axios.get(config.baseURL + "/uploadfile/filelist", {
+  console.log(1)
+  let isConvertFinished = true
+  axios.get(config.baseURL + "/uploadfile/filelist", {
     headers: {
       "Authentication": window.localStorage.getItem("token")
     }
@@ -68,9 +81,9 @@ const getFileList = () => {
       return
     }
     data.fileList = res.data.message
+    console.log(data.fileList)
     console.log(res.data.message)
-    data.isShow = true
-    let isConvertFinished = true
+    data.isShowFilelist = true
     for (let item in res.data.message) {
       if (item.convert_stata === "processing") {
         isConvertFinished = false
@@ -81,15 +94,21 @@ const getFileList = () => {
       }
     }
     if (isConvertFinished === true) {
-        clearInterval(createInterval)
+      if (JSON.stringify(res.data.message) !== "{}") {
+        data.isShowPayArea = true;
+      }
     }
+    return "none"
   }).catch(
       error => {
         ElMessage.error("初始化失败：error code 3")
       }
   )
-  const createInterval = setInterval(getRequest, 3000)
+
 }
+
+
+
 const chooseFile = () => {
   data.inputFile.click()
 }
@@ -120,20 +139,19 @@ const inputFileChange = () => {
 </script>
 
 <template>
-  <button @click="test"></button>
   <div class="wrapper">
     <div>
     <div class="uploader-wrapper">
       <n-button type="primary" class="upload-button" @click="chooseFile()">
-        <input type="file" multiple id="input-file" v-show="false" @change="inputFileChange">
+        <input type="file" multiple id="input-file" accept=".doc, .docx, .pdf" v-show="false" @change="inputFileChange">
         <a class="button-text">点击上传文件</a>
       </n-button>
     </div>
-    <div v-if="data.isShow" class="filelist-wrapper">
+    <div v-if="data.isShowFilelist" class="filelist-wrapper">
       <FileList :fileList="data.fileList" class="field-list"></FileList>
      </div>
       </div>
-    <div class="pay-area">
+    <div v-if="data.isShowPayArea" class="pay-area">
       <div class="price-counter">
         <PriceCounter :fileList="data.fileList"></PriceCounter>
       </div>
