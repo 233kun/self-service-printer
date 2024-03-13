@@ -12,13 +12,13 @@ import global_var
 
 
 def handle_printer_jobs():
-    connection = http.client.HTTPConnection("192.168.123.136:8000")
+    connection = http.client.HTTPConnection("47.106.100.54:8000")
     connection.request("GET", "/printer/get_job")
     job_response = connection.getresponse().read().decode("utf-8")
     print_ticket = json.loads(job_response)
     if print_ticket.get("message") == "no jobs found":
         return
-    response = urllib.request.urlopen(f"http://192.168.123.136:8000/printer?out_trade_no="
+    response = urllib.request.urlopen(f"http://47.106.100.54:8000/printer/get_job?out_trade_no="
                                       f"{print_ticket.get('out_trade_no')}&file={quote(print_ticket.get('file'))}")
     if not os.path.exists(f"save_files/{print_ticket.get('out_trade_no')}"):
         os.mkdir(f"save_files/{print_ticket.get('out_trade_no')}")
@@ -32,12 +32,12 @@ def handle_printer_jobs():
     else:
         sides = "two-sided-long-edge"
     submit_print_job = subprocess.run(
-        f"ipptool -tv http://192.168.123.139:631/printers/HP_LaserJet_P2015_Series -f 'save_files/{print_ticket.get('out_trade_no')}/{print_ticket.get('file')}' -d sides={sides} -d page-ranges={print_ticket.get('ranges')} -d copies=1 print_tic<nt_ticket_attributes.ipp",
+        f"ipptool -tv http://192.168.123.139:631/printers/HP_LaserJet_P2015_Series -f 'save_files/{print_ticket.get('out_trade_no')}/{print_ticket.get('file')}' -d sides={sides} -d page-ranges={print_ticket.get('ranges')} -d copies={print_ticket.get('copies')} print_tic<nt_ticket_attributes.ipp",
         capture_output=True,
         shell=True,
         text=True)
     print(f"save_files/{print_ticket.get('out_trade_no')}/{print_ticket.get('file')} -d sides={sides} -d page-ranges={print_ticket.get('ranges')} -d copies=1 ")
-    print(submit_print_job.stderr)
+    print(submit_print_job.stdout)
     job_id = submit_print_job.stdout.split("\n")[14][27:]
     monitor_times = 0
     previous_job_state = ""

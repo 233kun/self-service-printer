@@ -91,12 +91,12 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
         response = AlipayTradeCreateResponse()
         string = response.parse_response_content(response_content)
         print("https://qr.alipay.com/" + eval(response.body)['qr_code'].split("/")[-1])
-        os.mkdir(f"save_files/print_queue/{directory}_{seed}/")
+        os.mkdir(f"print_queue/{directory}_{seed}/")
         for file in files:
             filename = file.rsplit(".", 1)[0] + ".pdf"
             os.replace(f"save_files/{directory}/converted/{filename}",
-                       f"save_files/print_queue/{directory}_{seed}/{filename}")
-
+                       f"print_queue/{directory}_{seed}/{filename}")
+            os.remove(f"save_files/{directory}/raw/{file}")
             filedict = files.get(file)
             print_ticket = {"file": filename,
                             "out_trade_no": f"{directory}_{seed}",
@@ -106,7 +106,7 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
             global_var.global_var_setter(f"{directory}_{seed}_{filename}_print_ticket", print_ticket)
             print(global_var.global_var_getter(f"{directory}_{seed}_{filename}_print_ticket"))
             print(f"{directory}_{seed}_{filename}_print_ticket")
-        global_var.global_var_setter(f"{directory}_{seed}_expire", datetime.now().timestamp() + 60 * 60 * 2)
+        global_var.global_var_setter(f"{directory}_{seed}_expire", datetime.now().timestamp() + 60 * 60 * 2)  # free in files_dump.py event loop
         global_var.global_var_setter(f"{directory}_{seed}_is_paid", False)  # remove this attribute the future
         print(seed)
         # 响应成功的业务处理
@@ -133,9 +133,9 @@ def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotated[str
     if not trade_status == "TRADE_SUCCESS":
         return {"message": "fail"}
     global_var.global_var_setter(f"{out_trade_no}_is_paid", True)  # remove this attribute the future
-    files = os.listdir(f"save_files/print_queue/{out_trade_no}")
+    files = os.listdir(f"print_queue/{out_trade_no}")
     for file in files:
         print_queue.queue_push(global_var.global_var_getter(f"{out_trade_no}_{file}_print_ticket"))
         print(global_var.global_var_getter(f"{out_trade_no}_{file}_print_ticket"))
-    global_var.global_var_setter(f"{out_trade_no}_expire", datetime.now().timestamp() + 60 * 15)
+    global_var.global_var_setter(f"{out_trade_no}_expire", datetime.now().timestamp() + 60 * 15)  # free in files_dump.py event loop
     return {"message": "success"}

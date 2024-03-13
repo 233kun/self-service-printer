@@ -8,6 +8,7 @@ from fastapi import APIRouter, UploadFile, Header, File
 from pydantic import BaseModel
 from pypdf import PdfReader
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import FileResponse
 
 from global_var import global_var_setter, global_var_getter
 from doc_convert import doc_convert
@@ -53,7 +54,7 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             f.write(file.file.read())
         with open(f'save_files/{directory}/expire', "wb") as f:
             f.write(str(expire).encode())
-        global_var_setter(directory + file.filename, "processing")
+        # global_var_setter(directory + file.filename, "processing")
 
     convert_task = threading.Thread(doc_convert(directory))
     convert_task.start()
@@ -61,7 +62,7 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
 
 
 @router.get("/uploadfile/filelist")
-async def get_folder(Authentication:Annotated[str | None, Header()]):
+async def get_folder(Authentication: Annotated[str | None, Header()]):
     if jwt.verify_token(Authentication):
         payload = jwt.decode_token(Authentication)
         directory = payload.get("token")
@@ -72,7 +73,7 @@ async def get_folder(Authentication:Annotated[str | None, Header()]):
             mkdir(f"save_files/{directory}/converted")
             # with open(f'save_files/{directory}/expire', "wb") as f:
             #     f.write(str(expire).encode())
-        global_var_setter(f"{directory}_expire", expire)
+        global_var_setter(f"{directory}_expire", expire)  # free in files_dump.py loop event
 
         files = os.listdir(f"save_files/{directory}/raw")
         states = {}
@@ -86,14 +87,14 @@ async def get_folder(Authentication:Annotated[str | None, Header()]):
                 {
                     file: {
                         "filename": file,
-                        "convert_stata": global_var_getter(directory + file),
+                        "convert_state": global_var_getter(directory + file),
                         # "convert_stata": "error3..",
                         "total_pages": page_number,
                         "print_copies": 1,
                         "print_range_start": 1,
                         "print_range_end": page_number,
                         "print_side": False  # True == single; False == double
-                     }
+                    }
                 }
             )
         print(states)
@@ -111,11 +112,20 @@ async def create_item(fileToRemove: FileToRemove, Authentication: Annotated[str 
     if jwt.verify_token(Authentication):
         payload = jwt.decode_token(Authentication)
         directory = payload.get("token")
+        converted_filename = fileToRemove.filename.rsplit(".", 1)[0] + ".pdf"
         os.remove(f"save_files/{directory}/raw/{fileToRemove.filename}")
+        os.remove(f"save_files/{directory}/converted/{converted_filename}")
         return {"message": "success"}
     else:
         return {"message": "fail"}
     # return {"message": fileToRemove.filename, "token": Authentication}
 
 
-
+@router.get("/preview")
+async def preview_pdf(filename: str, Authentication: str):
+    if not jwt.verify_token(Authentication):
+        return {"message": "fail"}
+    payload = jwt.decode_token(Authentication)
+    directory = payload.get("token")
+    converted_filename = filename.rsplit(".", 1)[0] + ".pdf"
+    return FileResponse(f"save_files/{directory}/converted/{converted_filename}")

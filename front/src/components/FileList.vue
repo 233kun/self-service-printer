@@ -37,14 +37,32 @@ const removeFile = (filename, index) => {
       }
   )
 }
-
+const handleConvertState = (state) => {
+  if (state === "success") {
+    return false
+  }
+  if (state === "processing") {
+    return true
+  }
+  return true
+}
+const preview = (filename) => {
+  // axios.get(config.baseURL + "/preview",{
+  //   params: {
+  //     "filename": filename,
+  //     "Authentication": localStorage.getItem("token")
+  //   }
+  // },)
+  window.open(config.baseURL + `/preview?filename=${filename}&Authentication=${window.localStorage.getItem("token")}`)
+}
 </script>
 
 <template>
-  <div class="wrapper">
+  <div class="filelist">
     <TransitionGroup name="list" tag="ul" class="upload-file-list">
       <li v-for="(item, index) in props.fileList" :key="item">
-        <div class="test" v-loading="item.convert_stata==='success'?false:item.convert_stata==='error'?false:true">
+<!--        <div class="loading" v-loading="item.convert_stata==='success'?false:item.convert_stata==='error'?false:true">-->
+        <div class="wrapper">
           <div class="upload-file-info">
             <div class="head-warpper">
               <div class="icon-and-filename">
@@ -58,7 +76,8 @@ const removeFile = (filename, index) => {
               <IconBackspace class="icon" @click="removeFile(item.filename, index)"></IconBackspace>
             </div>
           </div>
-          <div class="print-info" :style="item.convert_stata==='error'?'display: none':'display: unset'">
+          <div class="print-info" :style="item.convert_state==='success'?'display: unset':'display: none'">
+<!--          <div class="print-info" style="visibility: hidden;>-->
             <div class="print-copies">
               <a>打印份数</a>
               <el-input-number v-model="item.print_copies" :min="1"/>
@@ -81,8 +100,19 @@ const removeFile = (filename, index) => {
                 <a>双面</a>
               </div>
             </div>
+            <div class="preview">
+              <div>
+                预览文件
+              </div>
+              <n-button type="warning" @click="preview(item.filename)">
+                预览
+              </n-button>
+            </div>
           </div>
-          <div class="warning" v-if="item.convert_stata === 'error'">
+          <div class="processing"  v-if="item.convert_state === 'processing'">
+            <div class="loading"></div>
+          </div>
+          <div class="warning" v-if="item.convert_state === 'error'">
             <div class="warning-text-and-icon"></div>
             <IconAlertCircleFilled class="warning-icon"></IconAlertCircleFilled >
             <a class="warning-text">无法读取文件</a>
@@ -95,6 +125,7 @@ const removeFile = (filename, index) => {
 
 
 <style scoped>
+
 .file-name {
   padding: 8px;
 overflow: hidden;
@@ -113,7 +144,6 @@ white-space: nowrap;
   display: flex;
   align-items: center;
   overflow: auto;
-
 }
 
 .icon {
@@ -121,7 +151,7 @@ white-space: nowrap;
   height: 28px;
 }
 
-.test {
+.wrapper {
   background: #FFFFFF;
   margin-top: 20px;
   padding: 8px;
@@ -166,15 +196,40 @@ white-space: nowrap;
   align-items: center;
 }
 .warning {
-  height: 100%;
+  height: 194px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
-.wrapper {
+.processing {
+  height: 194px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.loading {
+   border: 5px solid #e5e5e5;
+    border-top: 5px solid rgba(255,103,104,1);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: inline-block;
+    animation: turn-around 1.5s linear infinite;
+}
+@keyframes turn-around {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
+.preview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 44px;
+
+}
 .input-form {
   width: 50px;
 }
@@ -189,9 +244,6 @@ white-space: nowrap;
 
 }
 
-.warning {
-  height: 138px;
-}
 
 .warning-icon {
     width: 64px; height: 64px; color: #d03050

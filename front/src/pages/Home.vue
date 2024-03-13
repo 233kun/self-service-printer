@@ -4,7 +4,6 @@ import config from "@/assets/config.js";
 import axios from "axios";
 import FileList from "@/components/FileList.vue";
 import {ElMessage, ElNotification} from 'element-plus'
-import FileInfo from "@/components/FileInfo.vue";
 import PayButton from "@/components/PayButton.vue";
 import PriceCounter from "@/components/PriceCounter.vue";
 
@@ -17,63 +16,49 @@ const data = reactive(
       isShowPayArea: false
     }
 )
+async function getToken() {
+  let token = ""
+  token = await axios.get(config.baseURL + "/token/get")
+  return token
+  }
+
+async function renewToken() {
+  let token = ""
+  token = axios.post(config.baseURL + "/token/renew", {
+    "token": window.localStorage.getItem("token")
+  })
+  return token
+  }
 const checkToken = () => {
   if (window.localStorage.getItem("token") == null) {
-    axios.get(config.baseURL + "/token/get")
-        .then(res => {
-          window.localStorage.setItem("token", res.data.token)
-        }).catch(
-        error => {
-          ElMessage.error("初始化失败：error code 1")
-        }
-    )
-    return
+    getToken().then(async (res) => {
+      window.localStorage.setItem("token", res.data.token)
+      getFileList(res.data.token)
+    })
+  } else {
+    renewToken().then((res) => {
+      console.log(res.data.token)
+      window.localStorage.setItem("token", res.data.token)
+      getFileList(res.data.token)
+    })
   }
-  axios.post(config.baseURL + "/token/renew", {
-    "token": window.localStorage.getItem("token")
-  }, {}).then(res => {
-    window.localStorage.setItem("token", res.data.token)
-  }).catch(
-      error => {
-        ElMessage.error("初始化失败：error code 2")
-      }
-  )
-  ///////////////////////////////////////////////////////////////////////
-  //  获取已保存的文件，放在此是可以让第一次进入网站的用户不用获取                //
-  ///////////////////////////////////////////////////////////////////////
-  // getFileList()
 }
 
-onMounted(() => {
+
+
+onMounted(async () => {
   data.inputFile = reactive(
       document.getElementById("input-file")
   )
- const pro = new Promise(function(res, err) {
-   res()
-   err()
+  await checkToken()
 })
-  pro.then((res) => {
-    checkToken()
-  }).then((res) => {
-    getFileList()
-  })
-
-
-})
-
-const test = () => {
-  axios.get(config.baseURL + "/").then(
-      res => {
-        console.log(res)
-      }
-  )
-}
-const getFileList = () => {
-  console.log(1)
-  let isConvertFinished = true
+const getFileList = (token) => {
+  console.log("test1")
+    let isConvertFinished = true
   axios.get(config.baseURL + "/uploadfile/filelist", {
     headers: {
-      "Authentication": window.localStorage.getItem("token")
+      "Authentication": token
+      // "Authentication": getToken()
     }
   }).then(res => {
     console.log(res)
@@ -104,7 +89,7 @@ const getFileList = () => {
         ElMessage.error("初始化失败：error code 3")
       }
   )
-
+  return null
 }
 
 
@@ -117,9 +102,9 @@ const inputFileChange = () => {
   const uploadFile = new FormData()
   for (let length = data.files.length, i = 0; i < length; i++) {
     uploadFile.append("files", data.files[i])
-        data.fileList[data.files[i].name] = {
-        "filename": data.files[i].name,
-        "convert_stata": "processing"
+          data.fileList[data.files[i].name] = {
+          "filename": data.files[i].name,
+          "convert_state": "processing",
       }
   }
   axios.put(config.baseURL + "/uploadfile", uploadFile, {
@@ -130,7 +115,7 @@ const inputFileChange = () => {
     }
   }).then(
       res => {
-        getFileList()
+        getFileList(window.localStorage.getItem("token"))
       }
   ).then((error) => {
     console.log(error)

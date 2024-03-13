@@ -32,7 +32,7 @@ def printer_get_job():
 
 @router.get("/printer/get_file")
 def get_file(out_trade_no: str, file: str):
-    return FileResponse(f"save_files/print_queue/{out_trade_no}/{file}")
+    return FileResponse(f"print_queue/{out_trade_no}/{file}")
 
     # try:
     #     task_index = 0

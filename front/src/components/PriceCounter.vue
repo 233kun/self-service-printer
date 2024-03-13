@@ -8,11 +8,7 @@ const props = defineProps({
     type: Object
   }
 })
-const test = reactive({
-  fileList: computed(() => {
-    return props.fileList + "1"
-  }),
-})
+
 
 const rawPrice = computed({
   // getter

@@ -1,3 +1,6 @@
+import asyncio
+from datetime import time
+
 import uvicorn
 from fastapi import FastAPI, UploadFile, Request
 from starlette.middleware.cors import CORSMiddleware
@@ -10,6 +13,8 @@ from routers import pay
 import jwt
 from doc_convert import doc_convert
 import global_var
+from files_dump import dump_queue_files, dump_save_files
+import time
 
 app = FastAPI()
 app.include_router(user.router)
@@ -49,7 +54,23 @@ async def say_hello(name: str):
 #         f.write(file.file.read())
 #     print(request.headers.get("token"))
 #     return {"filename": file.filename}
+async def print_hello():
+    print("hello")
+    await asyncio.sleep(5)
+    print("world")
+
+
+async def dump_files_loop():
+    while True:
+        dump_save_files()
+        dump_queue_files()
+        await asyncio.sleep(5)
+
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(dump_files_loop())
+
 
 if __name__ == "__main__":
-    # uvicorn.run(app, host="127.0.0.1", port=8000)
     uvicorn.run(app, host="0.0.0.0", port=8000)
