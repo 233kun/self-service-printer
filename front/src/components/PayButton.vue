@@ -17,8 +17,8 @@ const pay = () => {
       'Authentication': window.localStorage.getItem("token")
     }
   }).then(res => {
-    // window.location.href = res.data.message
-    window.open(res.data.message)
+    window.location.href = res.data.message
+    // window.open(res.data.message)
   })
 }
 </script>

@@ -65,7 +65,7 @@ def handle_printer_jobs():
             exit()
 
         if job_state[0:9] == "completed":
-            params = urllib.parse.urlencode({'@job': job_response})
+            params = urllib.parse.urlencode({'@file': print_ticket.get('file'), '@out_trade_no': print_ticket.get('out_trade_no')})
             headers = {"Content-type": "application/json",
                        "accept": "application/json"}
             connection.request("post", "/printer/update/job_states", params, headers)

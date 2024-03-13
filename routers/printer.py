@@ -8,7 +8,7 @@ from starlette.responses import FileResponse
 from typing_extensions import Annotated
 
 import global_var
-from print_queue import get_job, queue_remove, get_queue_size
+from print_queue import get_job, queue_remove, get_queue_size, queue_pop
 
 router = APIRouter()
 
@@ -62,11 +62,14 @@ def update_job_status(updateJob: UpdateJob):
     index = 0
     queue_size = get_queue_size()
     while True:
-        if index > queue_size - 1:
+        if not index < queue_size:
             break
+        print(get_job(index))
         if get_job(index).get("file") == updateJob.file:
+            print("file")
             if get_job(index).get("out_trade_no") == updateJob.out_trade_no:
-                queue_remove(index)
+                print("out_trade_no")
+                queue_pop(index)
                 break
         index = index + 1
 

@@ -11,11 +11,11 @@ def global_var_setter(key, var):
 
 
 def global_var_getter(key):
-    try:
-        return _global_dict[key]
-    except:
-        print('读取' + key + '失败\r\n')
-        return "error"
+    # try:
+    return _global_dict[key]
+    # except:
+    #     print('读取' + key + '失败\r\n')
+    #     return "error"
 
 
 def free_var(key):

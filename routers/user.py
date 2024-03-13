@@ -1,7 +1,9 @@
 import asyncio
 import os.path
+import sys
 import threading
 from os import mkdir
+from shutil import copyfile
 from typing import Annotated
 from urllib.request import Request
 from fastapi import APIRouter, UploadFile, Header, File
@@ -50,14 +52,28 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         mkdir(f"save_files/{directory}/converted")
 
     for file in files:
-        with open(f'save_files/{directory}/raw/{file.filename}', "wb") as f:
-            f.write(file.file.read())
-        with open(f'save_files/{directory}/expire', "wb") as f:
-            f.write(str(expire).encode())
+        filetype = file.filename.rsplit(".", 1)[1]
+        if filetype == "pdf":
+            # with open(f'save_files/{directory}/converted/{file.filename}', "wb") as f:
+            #     f.write(file.file.read())
+            with open(f'save_files/{directory}/raw/{file.filename}', "wb") as f:
+                f.write(file.file.read())
+            try:
+                copyfile(f'save_files/{directory}/raw/{file.filename}', f'save_files/{directory}/converted/{file.filename}')
+            except IOError as e:
+                print("Unable to copy file. %s" % e)
+            except:
+                print("Unexpected error:", sys.exc_info())
+            global_var_setter(directory + file.filename, "success")
+            return {"message": "success"}
+        if filetype == "doc" or filetype == "docx":
+            with open(f'save_files/{directory}/raw/{file.filename}', "wb") as f:
+                f.write(file.file.read())
+            doc_convert(directory, file.filename)
+        # with open(f'save_files/{directory}/expire', "wb") as f:
+        #     f.write(str(expire).encode())
         # global_var_setter(directory + file.filename, "processing")
 
-    convert_task = threading.Thread(doc_convert(directory))
-    convert_task.start()
     return {"message": "success"}
 
 

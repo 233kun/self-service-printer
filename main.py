@@ -1,8 +1,10 @@
 import asyncio
+from contextlib import asynccontextmanager
 from datetime import time
 
 import uvicorn
 from fastapi import FastAPI, UploadFile, Request
+from fastapi_utilities import repeat_every
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from starlette.responses import FileResponse
@@ -13,7 +15,7 @@ from routers import pay
 import jwt
 from doc_convert import doc_convert
 import global_var
-from files_dump import dump_queue_files, dump_save_files
+from files_dump import dump_queue_files, dump_save_files, startup
 import time
 
 app = FastAPI()
@@ -61,16 +63,18 @@ async def print_hello():
 
 
 async def dump_files_loop():
-    while True:
         dump_save_files()
         dump_queue_files()
-        await asyncio.sleep(5)
 
 
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(dump_files_loop())
-
+@app.on_event('startup')
+    # async def startup_event():
+    #     asyncio.create_task(dump_files_loop())
+@repeat_every(seconds=3)
+async def print_hello():
+    dump_save_files()
+    dump_queue_files()
 
 if __name__ == "__main__":
+    startup()
     uvicorn.run(app, host="0.0.0.0", port=8000)
