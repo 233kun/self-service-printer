@@ -17,14 +17,13 @@ router = APIRouter()
 def printer_get_job():
     try:
         get_job(0)
-    except:
-        print(traceback.format_exc())
+    except BaseException:
         return {"message": "no jobs found"}
     else:
         return {"message": "jobs found",
                 "file": get_job(0).get("file"),
                 "out_trade_no": get_job(0).get("out_trade_no"),
-                "sides": get_job(0).get("out_trade_no"),
+                "sides": get_job(0).get("sides"),
                 "ranges": get_job(0).get("ranges"),
                 "copies": get_job(0).get("copies")
                 }
@@ -59,19 +58,14 @@ class UpdateState(BaseModel):
 
 @router.post("/printer/update/job_states")
 def update_job_status(updateJob: UpdateJob):
-    index = 0
     queue_size = get_queue_size()
-    while True:
-        if not index < queue_size:
-            break
-        print(get_job(index))
+    print(get_queue_size())
+    for index in range(queue_size):
         if get_job(index).get("file") == updateJob.file:
-            print("file")
             if get_job(index).get("out_trade_no") == updateJob.out_trade_no:
-                print("out_trade_no")
                 queue_pop(index)
-                break
-        index = index + 1
+                return {"message": "success"}
+    return {"message": "fail"}
 
 
 @router.get("/printer/status")

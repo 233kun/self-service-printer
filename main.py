@@ -7,7 +7,7 @@ from fastapi import FastAPI, UploadFile, Request
 from fastapi_utilities import repeat_every
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, HTMLResponse
 
 import print_queue
 from routers import user, printer
@@ -37,7 +37,7 @@ global_var.global_var_setter("printer_status", "running")
 
 @app.get("/")
 async def root():
-    return FileResponse("save_files/9088e7af-b58c-4162-b283-17d8c2d0a3e3/raw/wd-spectools-word-sample-04.doc")
+    return HTMLResponse(content="success", status_code=200)
 
 
 @app.get("/status")
@@ -77,4 +77,4 @@ async def print_hello():
 
 if __name__ == "__main__":
     startup()
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -2,12 +2,19 @@
 import { IconBrandAlipay } from '@tabler/icons-vue';
 import axios from "axios";
 import config from "@/assets/config.js";
+import {ref} from "vue";
 const props = defineProps({
   fileList: {
     type: Object
   }
 })
+let clickLock = false
 const pay = () => {
+  console.log(clickLock)
+  if (clickLock) {
+    return
+  }
+  clickLock = true
   axios.post(config.baseURL + "/pay/createBill", {
     "files": JSON.stringify(props.fileList)
   }, {
@@ -17,9 +24,12 @@ const pay = () => {
       'Authentication': window.localStorage.getItem("token")
     }
   }).then(res => {
-    window.location.href = res.data.message
-    // window.open(res.data.message)
-  })
+    // window.location.href = res.data.message
+    window.open(res.data.message)
+    clickLock = false
+  }).catch(err => {
+    clickLock = false
+  });
 }
 </script>
 

@@ -6,6 +6,7 @@ from dinero import Dinero
 from dinero.currencies import CNY
 from fastapi import APIRouter, Body, Form, Header
 from pydantic import BaseModel
+from starlette.responses import HTMLResponse
 from typing_extensions import Any, Annotated
 import json
 from pypdf import PdfReader
@@ -38,20 +39,21 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
     expire = payload.get("exp")
     files = json.loads(fileList.files)
     filenameArray = []
-    price = 0
+    price = Dinero(0, CNY)
 
     for file in files:
         filedict = files.get(file)
         converted_filename = file.rsplit(".", 1)[0] + ".pdf"
         reader = PdfReader(f"save_files/{directory}/converted/{converted_filename}")
-        page_number = len(reader.pages)
+        # page_number = len(reader.pages)
+        page_number = int(filedict.get("print_range_end")) - int(filedict.get("print_range_start")) + 1
         if not filedict.get("print_side"):
             price = Dinero(0.2, CNY).multiply(page_number)
         if filedict.get("print_side"):
             if page_number % 2 == 0:
-                price = Dinero(0.15, CNY).multiply(page_number)
+                price = Dinero(0.15, CNY).multiply(page_number).add(price).add(price)
             else:
-                price = Dinero(0.15, CNY).multiply(page_number - 1).add(0.2)
+                price = Dinero(0.15, CNY).multiply(page_number - 1).add(0.2).add(price)
 
     logging.basicConfig(
         level=logging.INFO,
@@ -77,7 +79,7 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
     model.subject = "30栋304打印店"
 
     request = AlipayTradePrecreateRequest(biz_model=model)
-    request.notify_url = "http://47.106.100.54:8000/pay/return"
+    request.notify_url = "https://47.106.100.54:8000/pay/return"
     response_content = False
     try:
         response_content = client.execute(request)
@@ -147,4 +149,4 @@ def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotated[str
             index = index + 1
         print(global_var.global_var_getter(f"{out_trade_no}_{file}_print_ticket"))
     global_var.global_var_setter(f"{out_trade_no}_expire", datetime.now().timestamp() + 60 * 15)  # free in files_dump.py event loop
-    return {"message": "success"}
+    return HTMLResponse(content="success", status_code=200)

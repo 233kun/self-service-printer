@@ -147,9 +147,11 @@ const inputFileChange = () => {
   </div>
 </template>
 <style scoed>
-html, body, #app{
+html, body, #app {
   background-color: #F2F2F2;
-    height: 100%
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 .wrapper {
@@ -172,7 +174,7 @@ html, body, #app{
   padding-bottom: 15%;
   border-radius: 12px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
-
+  margin-top: 20px;
 }
 
 .button-text {
