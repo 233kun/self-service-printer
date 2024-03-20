@@ -38,6 +38,7 @@ def dump_save_files():
                     os.rmdir(os.path.join(root, name))
             os.rmdir(f"save_files/{directory}")
 
+
 def dump_queue_files():
     directories = os.listdir("print_queue")
     for directory in directories:

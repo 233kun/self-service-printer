@@ -10,11 +10,10 @@ const props = defineProps({
 })
 let clickLock = false
 const pay = () => {
-  console.log(clickLock)
-  if (clickLock) {
+  if (clickLock === true) {
     return
   }
-  clickLock = true
+  clickLock = true;
   axios.post(config.baseURL + "/pay/createBill", {
     "files": JSON.stringify(props.fileList)
   }, {
@@ -26,9 +25,8 @@ const pay = () => {
   }).then(res => {
     // window.location.href = res.data.message
     window.open(res.data.message)
-    clickLock = false
   }).catch(err => {
-    clickLock = false
+    alert(err)
   });
 }
 </script>
