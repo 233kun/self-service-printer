@@ -7,7 +7,7 @@ from fastapi import FastAPI, UploadFile, Request
 from fastapi_utilities import repeat_every
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from starlette.responses import FileResponse, HTMLResponse
+from starlette.responses import FileResponse, HTMLResponse, JSONResponse
 
 import print_queue
 from routers import user, printer
@@ -37,8 +37,7 @@ global_var.global_var_setter("printer_status", "running")
 
 @app.get("/")
 async def root():
-    return HTMLResponse(content="success", status_code=200)
-
+    return JSONResponse(status_code=503, content={"message": "Item not found"})
 
 @app.get("/status")
 async def status():

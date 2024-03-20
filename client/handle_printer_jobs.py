@@ -14,7 +14,7 @@ import global_var
 
 
 def handle_printer_jobs():
-    connection = http.client.HTTPSConnection("47.106.100.54:8000")
+    connection = http.client.HTTPSConnection("47.106.100.54:8000", timeout=5)
     try:
         connection.request("GET", "/printer/get_job")
         job_response = connection.getresponse().read().decode("UTF-8")
@@ -29,10 +29,11 @@ def handle_printer_jobs():
         return
     try:
         response = urllib.request.urlopen(f"https://47.106.100.54:8000/printer/get_file?out_trade_no="
-                                          f"{print_ticket.get('out_trade_no')}&file={quote(print_ticket.get('file'))}")
+                                          f"{print_ticket.get('out_trade_no')}&file={quote(print_ticket.get('file'))}",
+                                          timeout=5)
     except:
         print("download file error")
-        return 
+        return
     if not os.path.exists(f"save_files/{print_ticket.get('out_trade_no')}"):
         os.mkdir(f"save_files/{print_ticket.get('out_trade_no')}")
     with open(f"save_files/{print_ticket.get('out_trade_no')}/{print_ticket.get('file')}", 'wb') as f:
@@ -56,9 +57,9 @@ def handle_printer_jobs():
     while True:
         get_job_attributes = subprocess.run(
             f"ipptool -tv http://192.168.123.139:631/printers/HP_LaserJet_P2015_Series -d job-id={job_id} job_attributes.ipp",
-        capture_output=True,
-        shell=True,
-        text=True)
+            capture_output=True,
+            shell=True,
+            text=True)
         start = get_job_attributes.stdout.find("job-state (enum) = ")
         end = get_job_attributes.stdout.find("\n", start)
         job_state = get_job_attributes.stdout[start + 19:end]
@@ -67,7 +68,7 @@ def handle_printer_jobs():
         else:
             monitor_times = 0
         previous_job_state = job_state
-        total_pages = int(print_ticket.get("ranges").split('-')[0]) - int(print_ticket.get("ranges").split('-')[1])
+        total_pages = int(print_ticket.get("ranges").split('-')[1]) - int(print_ticket.get("ranges").split('-')[0])
         print(total_pages)
         if 150 < monitor_times:
             params = urllib.parse.urlencode({'@state': "error"})
@@ -81,18 +82,19 @@ def handle_printer_jobs():
             print(print_ticket.get('file'))
             print(print_ticket.get('out_trade_no'))
             # params = urllib.parse.urlencode({'@file': print_ticket.get('file'), '@out_trade_no': print_ticket.get('out_trade_no')})
-            json_body = {'file': print_ticket.get('file'), 'out_trade_no':  print_ticket.get('out_trade_no')}
+            json_body = {'file': print_ticket.get('file'), 'out_trade_no': print_ticket.get('out_trade_no')}
             params = json.dumps(json_body)
             print(json_body)
             headers = {"Content-type": "application/json",
                        "accept": "application/json"}
-            try:
-                connection.request("POST", "/printer/update/job_states", params, headers)
-            except:
-                print("connection error")
-                return
+            while True:  # time out retry
+                try:
+                    connection.request("POST", "/printer/update/job_states", params, headers)
+                    break
+                except:
+                    print("update job states fail")
             if connection.getresponse().read().decode("UTF-8") == '{"message":"success"}':
-                break
+                break  # The end of Looping
         print(monitor_times)
         sleep(1)
 
