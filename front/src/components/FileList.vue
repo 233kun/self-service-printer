@@ -66,7 +66,7 @@ const preview = (filename) => {
           <div class="upload-file-info">
             <div class="head-warpper">
               <div class="icon-and-filename">
-              <icon-file-type-docx class="icon" v-if="item.filename.split('.')[item.filename.split('.').filename - 1] === 'docx'"></icon-file-type-docx>
+              <icon-file-type-docx class="icon" v-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'docx'"></icon-file-type-docx>
               <IconFileTypeDoc class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
               <IconFileTypePdf class="icon" v-else></IconFileTypePdf>
               <div class="file-name">

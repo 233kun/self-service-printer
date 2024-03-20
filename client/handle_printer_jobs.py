@@ -4,6 +4,8 @@ import os
 import subprocess
 import urllib.request
 import urllib.parse
+from json import JSONDecodeError
+from ssl import SSLEOFError
 from urllib.parse import quote
 from datetime import datetime
 from time import sleep
@@ -12,38 +14,41 @@ import global_var
 
 
 def handle_printer_jobs():
-    connection = http.client.HTTPConnection("47.106.100.54:8000")
+    connection = http.client.HTTPSConnection("47.106.100.54:8000")
     try:
         connection.request("GET", "/printer/get_job")
-    except:
+        job_response = connection.getresponse().read().decode("UTF-8")
+        print_ticket = json.loads(job_response)
+    except JSONDecodeError:
+        print("response body decode error")
+        return
+    except SSLEOFError:
         print("connection error")
-    job_response = connection.getresponse().read().decode("utf-8")
-    print_ticket = json.loads(job_response)
-    if print_ticket.get("message") == "no jobs found":
+        return
+    if not print_ticket.get("message") == "jobs found":
         return
     try:
-        response = urllib.request.urlopen(f"http://47.106.100.54:8000/printer/get_job?out_trade_no="
+        response = urllib.request.urlopen(f"https://47.106.100.54:8000/printer/get_file?out_trade_no="
                                           f"{print_ticket.get('out_trade_no')}&file={quote(print_ticket.get('file'))}")
     except:
-        print("connection error")
+        print("download file error")
+        return 
     if not os.path.exists(f"save_files/{print_ticket.get('out_trade_no')}"):
         os.mkdir(f"save_files/{print_ticket.get('out_trade_no')}")
     with open(f"save_files/{print_ticket.get('out_trade_no')}/{print_ticket.get('file')}", 'wb') as f:
         f.write(response.read())
-    global_var.global_var_setter(f"{print_ticket.get('out_trade_no')}_expire", datetime.now().timestamp() + 60 * 15)
 
+    global_var.global_var_setter(f"{print_ticket.get('out_trade_no')}_expire", datetime.now().timestamp() + 60 * 15)
     sides = ""
     if print_ticket.get("sides"):
         sides = "two-sided-long-edge"
     else:
         sides = "one-sided"
     submit_print_job = subprocess.run(
-        f"ipptool -tv http://192.168.123.139:631/printers/HP_LaserJet_P2015_Series -f 'save_files/{print_ticket.get('out_trade_no')}/{print_ticket.get('file')}' -d sides={sides} -d page-ranges={print_ticket.get('ranges')} -d copies={print_ticket.get('copies')} print_tic<nt_ticket_attributes.ipp",
+        f"ipptool -tv http://192.168.123.139:631/printers/HP_LaserJet_P2015_Series -f 'save_files/{print_ticket.get('out_trade_no')}/{print_ticket.get('file')}' -d sides={sides} -d page-ranges={print_ticket.get('ranges')} -d copies={print_ticket.get('copies')} print_ticket_attributes.ipp",
         capture_output=True,
         shell=True,
         text=True)
-    print(f"save_files/{print_ticket.get('out_trade_no')}/{print_ticket.get('file')} -d sides={sides} -d page-ranges={print_ticket.get('ranges')} -d copies=1 ")
-    print(submit_print_job.stdout)
     job_id = submit_print_job.stdout.split("\n")[14][27:]
     monitor_times = 0
     previous_job_state = ""
@@ -62,7 +67,9 @@ def handle_printer_jobs():
         else:
             monitor_times = 0
         previous_job_state = job_state
-        if 30 < monitor_times:
+        total_pages = int(print_ticket.get("ranges").split('-')[0]) - int(print_ticket.get("ranges").split('-')[1])
+        print(total_pages)
+        if 150 < monitor_times:
             params = urllib.parse.urlencode({'@state': "error"})
             headers = {"Content-type": "application/json",
                        "accept": "application/json"}
@@ -83,6 +90,7 @@ def handle_printer_jobs():
                 connection.request("POST", "/printer/update/job_states", params, headers)
             except:
                 print("connection error")
+                return
             if connection.getresponse().read().decode("UTF-8") == '{"message":"success"}':
                 break
         print(monitor_times)
