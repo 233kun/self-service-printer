@@ -6,6 +6,8 @@ from os import mkdir
 from shutil import copyfile
 from typing import Annotated
 from urllib.request import Request
+
+import img2pdf
 from fastapi import APIRouter, UploadFile, Header, File
 from pydantic import BaseModel
 from pypdf import PdfReader
@@ -13,7 +15,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
 from global_var import global_var_setter, global_var_getter
-from doc_convert import doc_convert
+from convert import convert_docs, convert_images
 import jwt
 
 router = APIRouter()
@@ -53,6 +55,7 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
 
     for file in files:
         filetype = file.filename.rsplit(".", 1)[1]
+
         if filetype == "pdf":
             # with open(f'save_files/{directory}/converted/{file.filename}', "wb") as f:
             #     f.write(file.file.read())
@@ -64,17 +67,20 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                 print("Unable to copy file. %s" % e)
             except:
                 print("Unexpected error:", sys.exc_info())
-            global_var_setter(directory + file.filename, "success")
             return {"message": "success"}
+
         if filetype == "doc" or filetype == "docx":
             with open(f'save_files/{directory}/raw/{file.filename}', "wb") as f:
                 f.write(file.file.read())
-            doc_convert(directory, file.filename)
+            convert_docs(directory, file.filename)
         # with open(f'save_files/{directory}/expire', "wb") as f:
         #     f.write(str(expire).encode())
         # global_var_setter(directory + file.filename, "processing")
+        if filetype == "jpeg" or filetype == "jpg" or filetype == "png":
+            convert_images(directory, file.filename)
+        return {"message": "success"}
 
-    return {"message": "success"}
+    return {"message": "error"}
 
 
 @router.get("/uploadfile/filelist")

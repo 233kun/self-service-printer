@@ -13,7 +13,7 @@ import print_queue
 from routers import user, printer
 from routers import pay
 import jwt
-from doc_convert import doc_convert
+from convert import convert_docs
 import global_var
 from files_dump import dump_queue_files, dump_save_files, startup
 import time

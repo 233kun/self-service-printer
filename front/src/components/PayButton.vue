@@ -8,9 +8,11 @@ const props = defineProps({
     type: Object
   }
 })
+let payLink = ""
 let clickLock = false
 const pay = () => {
   if (clickLock === true) {
+    window.location.href = payLink
     return
   }
   clickLock = true;
@@ -23,8 +25,9 @@ const pay = () => {
       'Authentication': window.localStorage.getItem("token")
     }
   }).then(res => {
-    // window.location.href = res.data.message
-    window.open(res.data.message)
+    payLink = res.data.message
+    window.location.href = res.data.message
+    // window.open(res.data.message)
   }).catch(err => {
     alert(err)
   });
