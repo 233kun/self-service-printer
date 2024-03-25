@@ -1,5 +1,5 @@
 <script setup>
-import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf, IconAlertCircle, IconAlertCircleFilled} from '@tabler/icons-vue';
+import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf, IconFileTypeXls , IconFileTypeXlsx,IconAlertCircleFilled} from '@tabler/icons-vue';
 import axios from "axios";
 import config from "@/assets/config.js";
 import {useMessage} from 'naive-ui'
@@ -66,9 +66,10 @@ const preview = (filename) => {
           <div class="upload-file-info">
             <div class="head-warpper">
               <div class="icon-and-filename">
-              <icon-file-type-docx class="icon" v-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'docx'"></icon-file-type-docx>
-              <IconFileTypeDoc class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
-              <IconFileTypePdf class="icon" v-else></IconFileTypePdf>
+                <icon-file-type-docx class="icon" v-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'docx'"></icon-file-type-docx>
+                <IconFileTypeDoc class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
+                <IconFileTypeXlsx
+                <IconFileTypePdf class="icon" v-else></IconFileTypePdf>
               <div class="file-name">
                 <a>{{ item.filename }}</a>
               </div>

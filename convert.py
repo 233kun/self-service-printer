@@ -36,6 +36,27 @@ def convert_docs(directory, filename):
         word.Quit()
 
 
+def convert_excel(directory, filename):
+    excel = win32com.client.DispatchEx("Excel.Application")
+    excel.Visible = False
+    excel.DisplayAlerts = 0
+    input_excel = os.path.abspath(f"save_files/{directory}/raw/{filename}")
+    output_filename = filename.rsplit(".", 1)[0]
+    output_pdf = os.path.abspath(f"save_files/{directory}/converted/{output_filename}.pdf")
+    excel.Quit()
+    global sheets
+    try:
+        sheets = excel.Workbooks.Open(input_excel, False)
+        sheets.ExportAsFixedFormat(0, output_pdf)
+    except:
+        global_var.global_var_setter(directory + filename, "error")  # free in files_dump.py but not implement
+    else:
+        global_var.global_var_setter(directory + filename, "success")
+    finally:
+        sheets.Close(False)  # must be closed before excel quit
+        excel.Quit()
+
+
 def convert_images(directory, filename):
     a4inpt = (img2pdf.mm_to_pt(210), img2pdf.mm_to_pt(297))
     layout_fun = img2pdf.get_layout_fun(a4inpt)

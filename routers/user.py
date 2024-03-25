@@ -15,7 +15,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
 from global_var import global_var_setter, global_var_getter
-from convert import convert_docs, convert_images
+from convert import convert_docs, convert_images, convert_excel
 import jwt
 
 router = APIRouter()
@@ -76,6 +76,12 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         # with open(f'save_files/{directory}/expire', "wb") as f:
         #     f.write(str(expire).encode())
         # global_var_setter(directory + file.filename, "processing")
+
+        if filetype == "xlsx":
+            with open(f'save_files/{directory}/raw/{file.filename}', "wb") as f:
+                f.write(file.file.read())
+            convert_excel(directory, file.filename)
+
         if filetype == "jpeg" or filetype == "jpg" or filetype == "png":
             convert_images(directory, file.filename)
         return {"message": "success"}

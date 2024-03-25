@@ -128,7 +128,7 @@ const inputFileChange = () => {
     <div>
     <div class="uploader-wrapper">
       <n-button type="primary" class="upload-button" @click="chooseFile()">
-        <input type="file" multiple id="input-file" accept=".doc, .docx, .pdf" v-show="false" @change="inputFileChange">
+        <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx,.pdf" v-show="false" @change="inputFileChange">
         <a class="button-text">点击上传文件</a>
       </n-button>
     </div>
