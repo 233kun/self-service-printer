@@ -1,5 +1,5 @@
 <script setup>
-import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf, IconFileTypeXls , IconFileTypeXlsx,IconAlertCircleFilled} from '@tabler/icons-vue';
+import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf, IconFileTypeXls,IconAlertCircleFilled} from '@tabler/icons-vue';
 import axios from "axios";
 import config from "@/assets/config.js";
 import {useMessage} from 'naive-ui'
@@ -68,7 +68,8 @@ const preview = (filename) => {
               <div class="icon-and-filename">
                 <icon-file-type-docx class="icon" v-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'docx'"></icon-file-type-docx>
                 <IconFileTypeDoc class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
-                <IconFileTypeXlsx
+                <IconFileTypeXls class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'xls'"></IconFileTypeXls>
+                <IconFileTypeXls class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'xlsx'"></IconFileTypeXls>
                 <IconFileTypePdf class="icon" v-else></IconFileTypePdf>
               <div class="file-name">
                 <a>{{ item.filename }}</a>
@@ -115,8 +116,11 @@ const preview = (filename) => {
           </div>
           <div class="warning" v-if="item.convert_state === 'error'">
             <div class="warning-text-and-icon"></div>
-            <IconAlertCircleFilled class="warning-icon"></IconAlertCircleFilled >
+            <IconAlertCircleFilled class="warning-icon"></IconAlertCircleFilled>
             <a class="warning-text">无法读取文件</a>
+          </div>
+          <div class="print-info-excel" v-if="item.convert_state === 'success' && item.filename.split('.')[item.filename.split('.').length - 1] === 'xlsx'">
+            <a class="excel-warning-text">Excel表格打印请务必先预览，打印效果可能与实际表格有所不同</a>
           </div>
         </div>
       </li>
@@ -255,8 +259,24 @@ white-space: nowrap;
 }
 
 .wrapper {
+
 }
 
+.excel-warning-icon {
+  width: 18px;
+  height: 18px;
+  color: red;
+}
+
+.excel-warning-text {
+  color: red;
+  display: flex;
+
+}
+.excel-waring-wrapper {
+    display: flex;
+  align-items: center;
+}
 .el-loading-mask {
   z-index: 9;
   border-radius: 12px;
