@@ -69,8 +69,7 @@ def handle_printer_jobs():
             monitor_times = 0
         previous_job_state = job_state
         total_pages = int(print_ticket.get("ranges").split('-')[1]) - int(print_ticket.get("ranges").split('-')[0])
-        print(total_pages)
-        if 150 < monitor_times:
+        if total_pages * 10 + 30 < monitor_times:
             params = urllib.parse.urlencode({'@state': "error"})
             headers = {"Content-type": "application/json",
                        "accept": "application/json"}
