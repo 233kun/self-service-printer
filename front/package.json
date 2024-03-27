@@ -15,7 +15,9 @@
     "element-plus": "^2.5.5",
     "pdfjs-dist": "^4.0.379",
     "vue": "^3.3.11",
-    "vue-router": "^4.2.5"
+    "vue-pdf-embed": "^2.0.3",
+    "vue-router": "^4.2.5",
+    "vue3-pdfjs": "^0.1.6"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.5.2",
