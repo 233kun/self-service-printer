@@ -47,13 +47,7 @@ const handleConvertState = (state) => {
   return true
 }
 const preview = (filename) => {
-  // axios.get(config.baseURL + "/preview",{
-  //   params: {
-  //     "filename": filename,
-  //     "Authentication": localStorage.getItem("token")
-  //   }
-  // },)
-  window.open(config.baseURL + `/preview?filename=${filename}&Authentication=${window.localStorage.getItem("token")}`)
+  window.open('http://localhost:5173/preview/' + `filename=${filename}&Authentication=${window.localStorage.getItem("token")}`)
 }
 </script>
 

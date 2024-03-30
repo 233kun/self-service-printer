@@ -47,6 +47,7 @@ const checkToken = () => {
 
 
 onMounted(async () => {
+  document.title = "30栋304打印店"
   data.inputFile = reactive(
       document.getElementById("input-file")
   )

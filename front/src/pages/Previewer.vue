@@ -19,7 +19,6 @@ onMounted(() => {
 // })
 </script>
 <template>
-  {{source}}
   <div class="pdf-wrapper">
     <vue-pdf-embed ref="pdfRef" :source="source"/>
     </div>
