@@ -27,10 +27,8 @@ def convert_docs(directory, filename):
     try:
         doc = word.Documents.Open(input_doc)
         doc.SaveAs(output_pdf, FileFormat=wdFormatPDF)
-    except BaseException:
-        global_var.global_var_setter(directory + filename, "error")  # free in files_dump.py but not implement
-    else:
-        global_var.global_var_setter(directory + filename, "success")
+    except Exception as e:
+        raise Exception(e)
     finally:
         doc.Close()
         word.Quit()
@@ -48,10 +46,8 @@ def convert_excel(directory, filename):
     try:
         sheets = excel.Workbooks.Open(input_excel, False)
         sheets.ExportAsFixedFormat(0, output_pdf)
-    except:
-        global_var.global_var_setter(directory + filename, "error")  # free in files_dump.py but not implement
-    else:
-        global_var.global_var_setter(directory + filename, "success")
+    except Exception as e:
+        raise Exception(e)
     finally:
         sheets.Close(False)  # must be closed before excel quit
         excel.Quit()
@@ -64,7 +60,5 @@ def convert_images(directory, filename):
     try:
         with open(f"save_files/{directory}/converted/{output_filename}.pdf", "wb") as f:
             f.write(img2pdf.convert(f"save_files/{directory}/raw/{filename}", layout_fun=layout_fun))
-    except:
-        global_var.global_var_setter(directory + filename, "error")
-    else:
-        global_var.global_var_setter(directory + filename, "success")  # free in files_dump.py but not implement
+    except Exception as e:
+        raise Exception(e)
