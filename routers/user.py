@@ -61,8 +61,10 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                 copyfile(f'save_files/{directory}/raw/{files[index].filename}', f'save_files/{directory}/converted/{file.filename}')
             except Exception as e:
                 print(e)
+                global_var_setter(directory + files[index].filename, "error")
                 return {"message": "error"}
             else:
+                global_var_setter(directory + files[index].filename, "success")
                 return {"message": "success"}
 
         if filetype == "doc" or filetype == "docx":
@@ -72,8 +74,10 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                convert_docs(directory, files[index].filename)
             except Exception as e:
                 print(e)
+                global_var_setter(directory + files[index].filename, "error")
                 return {"message": "error"}
             else:
+                global_var_setter(directory + files[index].filename, "success")
                 return {"message": "success"}
 
         if filetype == "xlsx" or filetype == "xls":
@@ -83,8 +87,10 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                 convert_excel(directory, files[index].filename)
             except Exception as e:
                 print(e)
+                global_var_setter(directory + files[index].filename, "error")
                 return {"message": "error"}
             else:
+                global_var_setter(directory + files[index].filename, "success")
                 return {"message": "success"}
 
         if filetype == "jpeg" or filetype == "jpg" or filetype == "png":
@@ -94,8 +100,10 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                 convert_images(directory, files[index].filename)
             except Exception as e:
                 print(e)
+                global_var_setter(directory + files[index].filename, "error")
                 return {"message": "error"}
             else:
+                global_var_setter(directory + files[index].filename, "success")
                 return {"message": "success"}
 
     return {"message": "error"}
