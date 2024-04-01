@@ -6,6 +6,7 @@ import FileList from "@/components/FileList.vue";
 import {ElMessage, ElNotification} from 'element-plus'
 import PayButton from "@/components/PayButton.vue";
 import PriceCounter from "@/components/PriceCounter.vue";
+import {IconFiles, IconPhoto, IconBook} from '@tabler/icons-vue';
 
 const data = reactive(
     {
@@ -16,11 +17,12 @@ const data = reactive(
       isShowPayArea: false
     }
 )
+
 async function getToken() {
   let token = ""
   token = await axios.get(config.baseURL + "/token/get")
   return token
-  }
+}
 
 async function renewToken() {
   let token = ""
@@ -28,7 +30,8 @@ async function renewToken() {
     "token": window.localStorage.getItem("token")
   })
   return token
-  }
+}
+
 const checkToken = () => {
   if (window.localStorage.getItem("token") == null) {
     getToken().then(async (res) => {
@@ -44,18 +47,21 @@ const checkToken = () => {
   }
 }
 
-
+let inputImage = reactive()
 
 onMounted(async () => {
   document.title = "30栋304打印店"
   data.inputFile = reactive(
       document.getElementById("input-file")
   )
+  inputImage = reactive(
+      document.getElementById("input-image")
+  )
   await checkToken()
 })
 const getFileList = (token) => {
   console.log("test1")
-    let isConvertFinished = true
+  let isConvertFinished = true
   axios.get(config.baseURL + "/uploadfile/filelist", {
     headers: {
       "Authentication": token
@@ -94,20 +100,36 @@ const getFileList = (token) => {
 }
 
 
-
 const chooseFile = () => {
   data.inputFile.click()
 }
+const chooseImage = () => {
+  inputImage.click()
+}
+
 const inputFileChange = () => {
-    data.files = data.inputFile.files
-  const uploadFile = new FormData()
+    const uploadFile = new FormData()
+  // uploadFile is used to store files data
+  // fileList is used to store files information
+  console.log(inputImage.files)
+  console.log(data.inputFile.files)
+  data.files = data.inputFile.files
   for (let length = data.files.length, i = 0; i < length; i++) {
     uploadFile.append("files", data.files[i])
-          data.fileList[data.files[i].name] = {
-          "filename": data.files[i].name,
+    data.fileList[data.files[i].name] = {
+      "filename": data.files[i].name,
+      "convert_state": "processing",
+    }
+  }
+
+  for (let length = inputImage.files.length, i = 0; i < length; i++) {
+    uploadFile.append("files", inputImage.files[  i])
+              data.fileList[inputImage.files[i].name] = {
+          "filename": inputImage.files[i].name,
           "convert_state": "processing",
       }
   }
+  console.log(uploadFile)
   axios.put(config.baseURL + "/uploadfile", uploadFile, {
     headers: {
       'Accept': 'application/json',
@@ -127,16 +149,34 @@ const inputFileChange = () => {
 <template>
   <div class="wrapper">
     <div>
-    <div class="uploader-wrapper">
-      <n-button type="primary" class="upload-button" @click="chooseFile()">
-        <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx,.pdf" v-show="false" @change="inputFileChange">
-        <a class="button-text">点击上传文件</a>
-      </n-button>
-    </div>
-    <div v-if="data.isShowFilelist" class="filelist-wrapper">
-      <FileList :fileList="data.fileList" class="field-list"></FileList>
-     </div>
+      <div class="uploader-wrapper">
+        <n-button type="primary" class="upload-button" @click="chooseFile()">
+          <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx,.pdf" v-show="false"
+                 @change="inputFileChange">
+          <div class="button-image-and-font">
+            <IconFiles/>
+            <a class="button-text">打印文档</a></div>
+        </n-button>
+        <div class="upload-button-wrapper">
+          <n-button color="#5B5B5B" class="upload-image-button" @click="chooseImage()">
+            <input type="file" multiple id="input-image" accept=".jpg" v-show="false" @change="inputFileChange">
+            <div class="button-image-and-font">
+              <IconPhoto/>
+              <a class="button-text">打印图片</a></div>
+          </n-button>
+          <n-button type="info" class="upload-image-button">
+            <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx,.pdf" v-show="false"
+                   @change="inputFileChange">
+            <div class="button-image-and-font">
+              <IconBook/>
+              <a class="button-text">使用教程</a></div>
+          </n-button>
+        </div>
       </div>
+      <div v-if="data.isShowFilelist" class="filelist-wrapper">
+        <FileList :fileList="data.fileList" class="field-list"></FileList>
+      </div>
+    </div>
     <div v-if="data.isShowPayArea" class="pay-area">
       <div class="price-counter">
         <PriceCounter :fileList="data.fileList"></PriceCounter>
@@ -164,9 +204,16 @@ html, body, #app {
 
 .uploader-wrapper {
   display: flex;
+  flex-direction: column;
   height: auto;
-  justify-content: center;
-  min-width: 100%;
+  align-items: center;
+  width: 100%;
+}
+
+.upload-button-wrapper {
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
 }
 
 .upload-button {
@@ -176,6 +223,20 @@ html, body, #app {
   border-radius: 12px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
   margin-top: 20px;
+}
+
+.upload-image-button {
+  width: 45%;
+  padding-top: 10%;
+  padding-bottom: 10%;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
+  margin-top: 20px;
+}
+
+.button-image-and-font {
+  display: flex;
+  align-items: center;
 }
 
 .button-text {
