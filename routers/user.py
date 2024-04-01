@@ -52,39 +52,51 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         mkdir(f"save_files/{directory}")
         mkdir(f"save_files/{directory}/raw")
         mkdir(f"save_files/{directory}/converted")
-
-    for file in files:
-        filetype = file.filename.rsplit(".", 1)[1]
-
+    for index in range(len(files)):
+        filetype = files[index].filename.rsplit(".", 1)[1]
         if filetype == "pdf":
-            # with open(f'save_files/{directory}/converted/{file.filename}', "wb") as f:
-            #     f.write(file.file.read())
-            with open(f'save_files/{directory}/raw/{file.filename}', "wb") as f:
-                f.write(file.file.read())
+            with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
+                f.write(files[index].file.read())
             try:
-                copyfile(f'save_files/{directory}/raw/{file.filename}', f'save_files/{directory}/converted/{file.filename}')
-            except IOError as e:
-                print("Unable to copy file. %s" % e)
-            except:
-                print("Unexpected error:", sys.exc_info())
-            return {"message": "success"}
+                copyfile(f'save_files/{directory}/raw/{files[index].filename}', f'save_files/{directory}/converted/{file.filename}')
+            except Exception as e:
+                print(e)
+                return {"message": "error"}
+            else:
+                return {"message": "success"}
 
         if filetype == "doc" or filetype == "docx":
-            with open(f'save_files/{directory}/raw/{file.filename}', "wb") as f:
-                f.write(file.file.read())
-            convert_docs(directory, file.filename)
-        # with open(f'save_files/{directory}/expire', "wb") as f:
-        #     f.write(str(expire).encode())
-        # global_var_setter(directory + file.filename, "processing")
+            with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
+                f.write(files[index].file.read())
+            try:
+               convert_docs(directory, files[index].filename)
+            except Exception as e:
+                print(e)
+                return {"message": "error"}
+            else:
+                return {"message": "success"}
 
-        if filetype == "xlsx":
-            with open(f'save_files/{directory}/raw/{file.filename}', "wb") as f:
-                f.write(file.file.read())
-            convert_excel(directory, file.filename)
+        if filetype == "xlsx" or filetype == "xls":
+            with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
+                f.write(files[index].file.read())
+            try:
+                convert_excel(directory, files[index].filename)
+            except Exception as e:
+                print(e)
+                return {"message": "error"}
+            else:
+                return {"message": "success"}
 
         if filetype == "jpeg" or filetype == "jpg" or filetype == "png":
-            convert_images(directory, file.filename)
-        return {"message": "success"}
+            with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
+                f.write(files[index].file.read())
+            try:
+                convert_images(directory, files[index].filename)
+            except Exception as e:
+                print(e)
+                return {"message": "error"}
+            else:
+                return {"message": "success"}
 
     return {"message": "error"}
 
