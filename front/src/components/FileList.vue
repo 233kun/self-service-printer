@@ -1,5 +1,5 @@
 <script setup>
-import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf, IconFileTypeXls,IconAlertCircleFilled} from '@tabler/icons-vue';
+import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf, IconFileTypeXls,IconAlertCircleFilled, IconPhoto} from '@tabler/icons-vue';
 import axios from "axios";
 import config from "@/assets/config.js";
 import {useMessage} from 'naive-ui'
@@ -47,7 +47,7 @@ const handleConvertState = (state) => {
   return true
 }
 const preview = (filename) => {
-  window.open('http://localhost:5173/preview/' + `filename=${filename}&Authentication=${window.localStorage.getItem("token")}`)
+  window.open('https://print.233kun.top/preview/' + `filename=${filename}&Authentication=${window.localStorage.getItem("token")}`)
 }
 </script>
 
@@ -64,7 +64,11 @@ const preview = (filename) => {
                 <IconFileTypeDoc class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
                 <IconFileTypeXls class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'xls'"></IconFileTypeXls>
                 <IconFileTypeXls class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'xlsx'"></IconFileTypeXls>
-                <IconFileTypePdf class="icon" v-else></IconFileTypePdf>
+                <IconFileTypePdf class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'pdf'"></IconFileTypePdf>
+                <IconPhoto  class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'jpg'"></IconPhoto>
+                <IconPhoto  class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'jpeg'"></IconPhoto>
+                <IconPhoto  class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'png'"></IconPhoto>
+
               <div class="file-name">
                 <a>{{ item.filename }}</a>
               </div>
@@ -75,7 +79,7 @@ const preview = (filename) => {
           <div class="print-info" :style="item.convert_state==='success'?'display: unset':'display: none'">
 <!--          <div class="print-info" style="visibility: hidden;>-->
             <div class="print-copies">
-              <a>打印份数</a>
+              <a> 打印份数</a>
               <el-input-number v-model="item.print_copies" :min="1"/>
             </div>
             <div class="print-range">
