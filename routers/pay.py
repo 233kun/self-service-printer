@@ -51,14 +51,14 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
         if not 1 <= int(filedict.get("print_range_end")) <= total_page_number or not 1 <= int(filedict.get("print_range_start")) <= total_page_number:
             return {"message": "订单不合法"}
         if not filedict.get("print_side"):
-            price = Dinero(0.2, CNY).multiply(page_number).multiply(int(filedict.get("print_copies")))
+            price = Dinero(0.2, CNY).multiply(page_number).multiply(int(filedict.get("print_copies"))).add(price)
         if filedict.get("print_side"):
             if page_number % 2 == 0:
-                price = Dinero(0.15, CNY).multiply(page_number).add(price).add(price).multiply(
-                    int(filedict.get("print_copies")))
+                price = Dinero(0.15, CNY).multiply(page_number).multiply(
+                    int(filedict.get("print_copies"))).add(price)
             else:
-                price = Dinero(0.15, CNY).multiply(page_number - 1).add(0.2).add(price).multiply(
-                    int(filedict.get("print_copies")))
+                price = Dinero(0.15, CNY).multiply(page_number - 1).add(0.2).multiply(
+                    int(filedict.get("print_copies"))).add(price)
 
     logging.basicConfig(
         level=logging.INFO,

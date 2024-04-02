@@ -18,7 +18,8 @@ const rawPrice = computed({
       let startPage = new Decimal(parseInt(props.fileList[file].print_range_start))
       let endPage = new Decimal(parseInt(props.fileList[file].print_range_end))
       let pageNumber = endPage.sub(startPage).plus(1)
-      price = Decimal.add(Decimal.mul(Decimal.add(Decimal.sub(endPage, startPage), 1), config.price), price).mul(props.fileList[file].print_copies)
+      // price = Decimal.add(Decimal.mul(Decimal.add(Decimal.sub(endPage, startPage), 1), config.price), price).mul(props.fileList[file].print_copies)
+      price = pageNumber.mul(config.price).mul(props.fileList[file].print_copies).add(price)
     }
     return price
   }
@@ -35,9 +36,9 @@ const discountedPrice = computed({
         continue
       }
       if (pageNumber % 2 === 0) {
-        price = pageNumber.mul(config.discountedPrice).add(price).mul(props.fileList[file].print_copies)
+        price = pageNumber.mul(config.discountedPrice).mul(props.fileList[file].print_copies).add(price)
       } else {
-        price = pageNumber.sub(1).mul(config.discountedPrice).add(config.price).add(price).mul(props.fileList[file].print_copies)
+        price = pageNumber.sub(1).mul(config.discountedPrice).add(config.price).mul(props.fileList[file].print_copies).add(price)
       }
     }
     return price
