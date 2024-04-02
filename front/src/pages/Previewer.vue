@@ -12,7 +12,7 @@ const router = useRoute()
 let source = ref(0)
 onMounted(() => {
   source.value = router.params.pdfUrl
-  source.value = "http://127.0.0.1:8000/preview?" + source.value
+  source.value = "https://47.106.100.54:8000/preview?" + source.value
 })
 // onMounted(() => {
 //   // getPagesNumber()

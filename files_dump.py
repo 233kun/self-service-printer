@@ -21,7 +21,7 @@ def startup():
 
 
 def dump_save_files():
-    print(datetime.now())
+    # print(datetime.now())
     directories = os.listdir("save_files")
     for directory in directories:
 

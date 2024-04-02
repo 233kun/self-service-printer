@@ -19,7 +19,25 @@ const data = ref({
   loading: true,
   isConvertFinished: false
 })
-
+const sideOption = [
+  {
+    value: 'one-sided',
+    label: '单面',
+  },
+  {
+    value: 'two-sided-long-edge',
+    label: '双面(默认)',
+  },
+  {
+    value: 'two-sided-long-edge',
+    label: '双面(长边翻页)',
+  },
+  {
+    value: 'two-sided-short-edge',
+    label: '双面(短边翻页)',
+  }
+]
+const value = ref('')
 const removeFile = (filename, index) => {
   axios.post(config.baseURL + "/uploadfile/remove", {
     "filename": filename
@@ -94,9 +112,22 @@ const preview = (filename) => {
               <a>双面打印</a>
               <div>
                 <a>单面</a>
-                <el-switch v-model="item.print_side"
-                           style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949">
-                </el-switch>
+<!--                <el-switch v-model="item.print_side"-->
+<!--                           style="&#45;&#45;el-switch-on-color: #13ce66; &#45;&#45;el-switch-off-color: #ff4949">-->
+<!--                </el-switch>-->
+    <el-select
+      v-model="item.print_side"
+      placeholder="Select"
+      size="large"
+      style="width: 240px"
+    >
+      <el-option
+        v-for="item in sideOption"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      />
+    </el-select>
                 <a>双面</a>
               </div>
             </div>
