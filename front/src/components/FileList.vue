@@ -25,7 +25,7 @@ const sideOption = [
     label: '单面',
   },
   {
-    value: 'two-sided-long-edge',
+    value: 'two-sided-default',
     label: '双面(默认)',
   },
   {
