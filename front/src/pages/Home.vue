@@ -1,5 +1,6 @@
 <script setup>
 import {onMounted, onUnmounted, reactive, ref} from "vue";
+// import config from "@/assets/config.js";
 import config from "@/assets/config.js";
 import axios from "axios";
 import FileList from "@/components/FileList.vue";
@@ -17,7 +18,6 @@ const data = reactive(
       isShowPayArea: false
     }
 )
-
 async function getToken() {
   let token = ""
   token = await axios.get(config.baseURL + "/token/get")
@@ -50,6 +50,7 @@ const checkToken = () => {
 let inputImage = reactive()
 
 onMounted(async () => {
+  console.log(config.baseURL)
   document.title = "30栋304打印店"
   data.inputFile = reactive(
       document.getElementById("input-file")
@@ -151,9 +152,9 @@ const inputFileChange = () => {
     <div>
       <div class="uploader-wrapper">
         <n-button type="primary" class="upload-button" @click="chooseFile()">
-          <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx,.pdf" v-show="false"
+          <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx, .xls, .pdf" v-show="false"
                  @change="inputFileChange">
-          <div class="button-image-and-font">
+          <div class="button-image-and-font">:
             <IconFiles/>
             <a class="button-text">打印文档</a></div>
         </n-button>
