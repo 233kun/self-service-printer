@@ -1,5 +1,14 @@
 <script setup>
-import {IconFileTypeDocx, IconBackspace, IconFileTypeDoc, IconFileTypePdf, IconFileTypeXls,IconAlertCircleFilled, IconPhoto} from '@tabler/icons-vue';
+import {
+  IconFileTypeDocx,
+  IconBackspace,
+  IconFileTypeDoc,
+  IconFileTypePdf,
+  IconFileTypeXls,
+  IconAlertCircleFilled,
+  IconPhoto,
+  IconMinus
+} from '@tabler/icons-vue';
 import axios from "axios";
 import config from "@/assets/config.js";
 import {useMessage} from 'naive-ui'
@@ -73,29 +82,37 @@ const preview = (filename) => {
   <div class="filelist">
     <TransitionGroup name="list" tag="ul" class="upload-file-list">
       <li v-for="(item, index) in props.fileList" :key="item">
-<!--        <div class="loading" v-loading="item.convert_stata==='success'?false:item.convert_stata==='error'?false:true">-->
+        <!--        <div class="loading" v-loading="item.convert_stata==='success'?false:item.convert_stata==='error'?false:true">-->
         <div class="wrapper">
           <div class="upload-file-info">
             <div class="head-warpper">
               <div class="icon-and-filename">
-                <icon-file-type-docx class="icon" v-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'docx'"></icon-file-type-docx>
-                <IconFileTypeDoc class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
-                <IconFileTypeXls class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'xls'"></IconFileTypeXls>
-                <IconFileTypeXls class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'xlsx'"></IconFileTypeXls>
-                <IconFileTypePdf class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'pdf'"></IconFileTypePdf>
-                <IconPhoto  class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'jpg'"></IconPhoto>
-                <IconPhoto  class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'jpeg'"></IconPhoto>
-                <IconPhoto  class="icon" v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'png'"></IconPhoto>
+                <icon-file-type-docx class="icon"
+                                     v-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'docx'"></icon-file-type-docx>
+                <IconFileTypeDoc class="icon"
+                                 v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'doc'"></IconFileTypeDoc>
+                <IconFileTypeXls class="icon"
+                                 v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'xls'"></IconFileTypeXls>
+                <IconFileTypeXls class="icon"
+                                 v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'xlsx'"></IconFileTypeXls>
+                <IconFileTypePdf class="icon"
+                                 v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'pdf'"></IconFileTypePdf>
+                <IconPhoto class="icon"
+                           v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'jpg'"></IconPhoto>
+                <IconPhoto class="icon"
+                           v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'jpeg'"></IconPhoto>
+                <IconPhoto class="icon"
+                           v-else-if="item.filename.split('.')[item.filename.split('.').length - 1] === 'png'"></IconPhoto>
 
-              <div class="file-name">
-                <a>{{ item.filename }}</a>
-              </div>
+                <div class="file-name">
+                  <a>{{ item.filename }}</a>
                 </div>
+              </div>
               <IconBackspace class="icon" @click="removeFile(item.filename, index)"></IconBackspace>
             </div>
           </div>
           <div class="print-info" :style="item.convert_state==='success'?'display: unset':'display: none'">
-<!--          <div class="print-info" style="visibility: hidden;>-->
+            <!--          <div class="print-info" style="visibility: hidden;>-->
             <div class="print-copies">
               <a> 打印份数</a>
               <el-input-number v-model="item.print_copies" :min="1"/>
@@ -104,31 +121,28 @@ const preview = (filename) => {
               <a>打印范围</a>
               <div class="input-form-wrapper">
                 <el-input class="input-form" v-model="item.print_range_start" placeholder="1"/>
-                <a class="slash"> / </a>
+                <a class="slash">  </a>
+                <IconMinus/>
                 <el-input class="input-form" v-model="item.print_range_end" :placeholder="item.total_pages"/>
               </div>
             </div>
             <div class="print-side">
               <a>双面打印</a>
               <div>
-                <a>单面</a>
-<!--                <el-switch v-model="item.print_side"-->
-<!--                           style="&#45;&#45;el-switch-on-color: #13ce66; &#45;&#45;el-switch-off-color: #ff4949">-->
-<!--                </el-switch>-->
-    <el-select
-      v-model="item.print_side"
-      placeholder="Select"
-      size="large"
-      style="width: 240px"
-    >
-      <el-option
-        v-for="item in sideOption"
-        :key="item.value"
-        :label="item.label"
-        :value="item.value"
-      />
-    </el-select>
-                <a>双面</a>
+                <el-select
+                    class="selector"
+                    v-model="item.print_side"
+                    placeholder="Select"
+                    size="large"
+                    default-first-option="one-sided"
+                >
+                  <el-option
+                      v-for="item in sideOption"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                  />
+                </el-select>
               </div>
             </div>
             <div class="preview">
@@ -140,7 +154,7 @@ const preview = (filename) => {
               </n-button>
             </div>
           </div>
-          <div class="processing"  v-if="item.convert_state === 'processing'">
+          <div class="processing" v-if="item.convert_state === 'processing'">
             <div class="loading"></div>
           </div>
           <div class="warning" v-if="item.convert_state === 'error'">
@@ -148,7 +162,8 @@ const preview = (filename) => {
             <IconAlertCircleFilled class="warning-icon"></IconAlertCircleFilled>
             <a class="warning-text">无法读取文件</a>
           </div>
-          <div class="print-info-excel" v-if="item.convert_state === 'success' && item.filename.split('.')[item.filename.split('.').length - 1] === 'xlsx'">
+          <div class="print-info-excel"
+               v-if="item.convert_state === 'success' && item.filename.split('.')[item.filename.split('.').length - 1] === 'xlsx'">
             <a class="excel-warning-text">Excel表格打印请务必先预览，打印效果可能与实际表格有所不同</a>
           </div>
         </div>
@@ -162,9 +177,9 @@ const preview = (filename) => {
 
 .file-name {
   padding: 8px;
-overflow: hidden;
-text-overflow: ellipsis;
-white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .head-warpper {
@@ -236,6 +251,9 @@ white-space: nowrap;
   justify-content: center;
   align-items: center;
 }
+.selector {
+  width: 150px;
+}
 .processing {
   height: 194px;
   display: flex;
@@ -243,18 +261,24 @@ white-space: nowrap;
   justify-content: center;
   align-items: center;
 }
+
 .loading {
-   border: 5px solid #e5e5e5;
-    border-top: 5px solid rgba(255,103,104,1);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    display: inline-block;
-    animation: turn-around 1.5s linear infinite;
+  border: 5px solid #e5e5e5;
+  border-top: 5px solid rgba(255, 103, 104, 1);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: inline-block;
+  animation: turn-around 1.5s linear infinite;
 }
+
 @keyframes turn-around {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .preview {
@@ -264,6 +288,7 @@ white-space: nowrap;
   height: 44px;
 
 }
+
 .input-form {
   width: 50px;
 }
@@ -275,12 +300,13 @@ white-space: nowrap;
 .input-form-wrapper {
   display: flex;
   flex-direction: row;
-
+  align-items: center;
 }
 
-
 .warning-icon {
-    width: 64px; height: 64px; color: #d03050
+  width: 64px;
+  height: 64px;
+  color: #d03050
 }
 
 .warning-text {
@@ -302,10 +328,12 @@ white-space: nowrap;
   display: flex;
 
 }
+
 .excel-waring-wrapper {
-    display: flex;
+  display: flex;
   align-items: center;
 }
+
 .el-loading-mask {
   z-index: 9;
   border-radius: 12px;

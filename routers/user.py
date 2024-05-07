@@ -141,7 +141,7 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
                         "print_copies": 1,
                         "print_range_start": 1,
                         "print_range_end": page_number,
-                        "print_side": False  # True == single; False == double
+                        "print_side": "one-sided"  # True == single; False == double
                     }
                 }
             )
