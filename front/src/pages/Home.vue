@@ -7,7 +7,7 @@ import FileList from "@/components/FileList.vue";
 import {ElMessage, ElNotification} from 'element-plus'
 import PayButton from "@/components/PayButton.vue";
 import PriceCounter from "@/components/PriceCounter.vue";
-import {IconFiles, IconPhoto, IconBook} from '@tabler/icons-vue';
+import {IconFiles, IconPhoto, IconBook, IconBrandAndroid} from '@tabler/icons-vue';
 
 const data = reactive(
     {
@@ -18,6 +18,7 @@ const data = reactive(
       isShowPayArea: false
     }
 )
+
 async function getToken() {
   let token = ""
   token = await axios.get(config.baseURL + "/token/get")
@@ -109,7 +110,7 @@ const chooseImage = () => {
 }
 
 const inputFileChange = () => {
-    const uploadFile = new FormData()
+  const uploadFile = new FormData()
   // uploadFile is used to store files data
   // fileList is used to store files information
   console.log(inputImage.files)
@@ -124,11 +125,11 @@ const inputFileChange = () => {
   }
 
   for (let length = inputImage.files.length, i = 0; i < length; i++) {
-    uploadFile.append("files", inputImage.files[  i])
-              data.fileList[inputImage.files[i].name] = {
-          "filename": inputImage.files[i].name,
-          "convert_state": "processing",
-      }
+    uploadFile.append("files", inputImage.files[i])
+    data.fileList[inputImage.files[i].name] = {
+      "filename": inputImage.files[i].name,
+      "convert_state": "processing",
+    }
   }
   console.log(uploadFile)
   axios.put(config.baseURL + "/uploadfile", uploadFile, {
@@ -144,6 +145,9 @@ const inputFileChange = () => {
   ).then((error) => {
     console.log(error)
   })
+}
+const herfToAndroidPayTutorial = () => {
+      window.location.href = "https://233kun.top"
 }
 </script>
 
@@ -166,13 +170,18 @@ const inputFileChange = () => {
               <a class="button-text">打印图片</a></div>
           </n-button>
           <n-button type="info" class="upload-image-button">
-            <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx,.pdf" v-show="false"
-                   @change="inputFileChange">
             <div class="button-image-and-font">
               <IconBook/>
               <a class="button-text">使用教程</a></div>
           </n-button>
         </div>
+        <n-button strong secondary type="primary" class="android-pay-tutorial-button">
+          <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx,.pdf" v-show="false"
+                 @change="inputFileChange">
+          <div class="button-image-and-font" @click="herfToAndroidPayTutorial()">
+            <IconBrandAndroid/>
+            <a class="button-text" style="color: #18a058">安卓无法支付点这</a></div>
+        </n-button>
       </div>
       <div v-if="data.isShowFilelist" class="filelist-wrapper">
         <FileList :fileList="data.fileList" class="field-list"></FileList>
@@ -234,7 +243,14 @@ html, body, #app {
   box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
   margin-top: 20px;
 }
-
+.android-pay-tutorial-button {
+  width: 90%;
+  padding-top: 10%;
+  padding-bottom: 10%;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
+  margin-top: 20px;
+}
 .button-image-and-font {
   display: flex;
   align-items: center;
