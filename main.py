@@ -9,6 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from starlette.responses import FileResponse, HTMLResponse, JSONResponse
 
+import models
 import print_queue
 from routers import user, printer
 from routers import pay
@@ -37,8 +38,10 @@ global_var.global_var_setter("printer_status", "running")
 
 @app.get("/")
 async def root():
-    return JSONResponse(status_code=503, content={"message": "Item not found"})
-
+    # return JSONResponse(status_code=503, content={"message": "Item not found"})
+    a = models.FileModel()
+    a.filename  = "1"
+    return a.__dict__
 @app.get("/status")
 async def status():
     return {"message": global_var.global_var_getter("status")}

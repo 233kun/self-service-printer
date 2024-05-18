@@ -1,21 +1,17 @@
-import asyncio
 import os.path
-import sys
-import threading
+from datetime import time
 from os import mkdir
 from shutil import copyfile
 from typing import Annotated
-from urllib.request import Request
 
-import img2pdf
-from fastapi import APIRouter, UploadFile, Header, File
+from fastapi import APIRouter, UploadFile, Header
 from pydantic import BaseModel
 from pypdf import PdfReader
-from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
 from global_var import global_var_setter, global_var_getter
 from convert import convert_docs, convert_images, convert_excel
+from models import FileModel
 import jwt
 
 router = APIRouter()
@@ -41,18 +37,32 @@ async def renew_token(jwtToken: JwtToken):
     # return {jwtToken.token}
 
 
+
 @router.put("/uploadfile")
 async def create_upload_file(Authentication: Annotated[str | None, Header()], files: list[UploadFile]):
+
     if not jwt.verify_token(Authentication):
         return {"message": "fail"}
     payload = jwt.decode_token(Authentication)
     directory = payload.get("token")
     expire = payload.get("exp")
+
     if not os.path.exists("save_files/" + directory):
         mkdir(f"save_files/{directory}")
         mkdir(f"save_files/{directory}/raw")
         mkdir(f"save_files/{directory}/converted")
+
+    files_temp = {}
     for index in range(len(files)):
+        file_attribute = FileModel()
+        file_attribute.filename = files[index].filename
+        file_attribute.convert_state = "processing"
+        # file_attribute.total_pages =
+        file_attribute.print_copies = 1
+        # file_attribute.print_range_start =
+        # file_attribute.print_range_end =
+        file_attribute.print_side = "one-sided"
+
         filetype = files[index].filename.rsplit(".", 1)[1]
         if filetype == "pdf":
             with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
@@ -63,9 +73,11 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             except Exception as e:
                 print(e)
                 global_var_setter(directory + files[index].filename, "error")
+                file_attribute.convert_state = "error"
                 return {"message": "error"}
             else:
                 global_var_setter(directory + files[index].filename, "success")
+                file_attribute.convert_state = "success"
 
         if filetype == "doc" or filetype == "docx":
             with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
@@ -75,9 +87,13 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             except Exception as e:
                 print(e)
                 global_var_setter(directory + files[index].filename, "error")
-                return {"message": "error"}
+                file_attribute.convert_state = "error"
             else:
                 global_var_setter(directory + files[index].filename, "success")
+                reader = PdfReader(f"save_files/{directory}/converted/{files[index].filename.rsplit(".", 1)[0]}.pdf")
+                file_attribute.print_range_end = len(reader.pages)
+                file_attribute.total_pages = len(reader.pages)
+                file_attribute.convert_state = "success"
 
         if filetype == "xlsx" or filetype == "xls":
             with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
@@ -87,9 +103,10 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             except Exception as e:
                 print(e)
                 global_var_setter(directory + files[index].filename, "error")
-                return {"message": "error"}
+                file_attribute.convert_state = "error"
             else:
                 global_var_setter(directory + files[index].filename, "success")
+                file_attribute.convert_state = "success"
 
         if filetype == "jpeg" or filetype == "jpg" or filetype == "png":
             with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
@@ -99,10 +116,21 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             except Exception as e:
                 print(e)
                 global_var_setter(directory + files[index].filename, "error")
-                return {"message": "error"}
+                file_attribute.convert_state = "error"
             else:
                 global_var_setter(directory + files[index].filename, "success")
+                file_attribute.convert_state = "success"
 
+        files_temp[files[index].filename] = file_attribute
+        files_temp2 = {}
+    try:
+        global_var_getter(directory)
+    except BaseException as e:
+        global_var_setter(directory, files_temp)
+        print(global_var_getter(directory))
+    else:
+        files_temp2 = global_var_getter(directory)
+        files_temp.update(files_temp2)
     return {"message": "success"}
 
 
@@ -112,40 +140,14 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         payload = jwt.decode_token(Authentication)
         directory = payload.get("token")
         expire = payload.get("exp")
-        if not os.path.exists("save_files/" + directory):
-            mkdir(f"save_files/{directory}")
-            mkdir(f"save_files/{directory}/raw")
-            mkdir(f"save_files/{directory}/converted")
-            # with open(f'save_files/{directory}/expire', "wb") as f:
-            #     f.write(str(expire).encode())
-        global_var_setter(f"{directory}_expire", expire)  # free in files_dump.py loop event
+        returnFiles = {}
+        files_attribute = {}
+        files_attribute = global_var_getter(directory)
+        for key in files_attribute:
+            returnFiles.update({key: files_attribute[key].__dict__})
+        print(returnFiles)
+    return {"message": returnFiles}
 
-        files = os.listdir(f"save_files/{directory}/raw")
-        states = {}
-        for file in files:
-            page_number = 1
-            if global_var_getter(directory + file) == "success":
-                converted_filename = file.rsplit(".", 1)[0] + ".pdf"
-                reader = PdfReader(f"save_files/{directory}/converted/{converted_filename}")
-                page_number = len(reader.pages)
-            states.update(
-                {
-                    file: {
-                        "filename": file,
-                        "convert_state": global_var_getter(directory + file),
-                        # "convert_stata": "error3..",
-                        "total_pages": page_number,
-                        "print_copies": 1,
-                        "print_range_start": 1,
-                        "print_range_end": page_number,
-                        "print_side": "one-sided"  # True == single; False == double
-                    }
-                }
-            )
-        print(states)
-        return {"message": states}
-    else:
-        return {"message": "fail"}
 
 
 class FileToRemove(BaseModel):
