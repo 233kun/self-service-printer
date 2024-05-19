@@ -1,5 +1,4 @@
 class FileModel:
-
     filename: str
     convert_state: str
     total_pages: int
@@ -12,3 +11,9 @@ class FileModel:
         self.print_copies = 1
         self.print_range_start = 1
         self.print_side = "one-sided"
+
+
+class ReturnResult:
+    code: int
+    message: str
+    data: str
