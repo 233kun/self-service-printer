@@ -142,10 +142,13 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         expire = payload.get("exp")
         returnFiles = {}
         files_attribute = {}
-        files_attribute = global_var_getter(directory)
-        for key in files_attribute:
-            returnFiles.update({key: files_attribute[key].__dict__})
-        print(returnFiles)
+        try:
+            files_attribute = global_var_getter(directory)
+        except BaseException:
+            pass
+        else:
+            for key in files_attribute:
+                returnFiles.update({key: files_attribute[key].__dict__})
     return {"message": returnFiles}
 
 
@@ -162,6 +165,9 @@ async def create_item(fileToRemove: FileToRemove, Authentication: Annotated[str 
         converted_filename = fileToRemove.filename.rsplit(".", 1)[0] + ".pdf"
         os.remove(f"save_files/{directory}/raw/{fileToRemove.filename}")
         os.remove(f"save_files/{directory}/converted/{converted_filename}")
+        files_attribute = global_var_getter(directory)
+        files_attribute.pop(fileToRemove.filename)
+        global_var_setter(directory, files_attribute)
         return {"message": "success"}
     else:
         return {"message": "fail"}

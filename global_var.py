@@ -5,7 +5,6 @@ def init():
 
 def global_var_setter(key, var):
     _global_dict[key] = var
-
     # _global_dict.update({key: ""})
     # _global_dict.update({key: var})
 
