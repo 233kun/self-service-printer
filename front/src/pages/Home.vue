@@ -13,7 +13,6 @@ const data = reactive(
     {
       inputFile: null,
       files: null,
-      fileList: {},
       isShowFilelist: false,
       isShowPayArea: false
     }
@@ -61,8 +60,10 @@ onMounted(async () => {
   )
   await checkToken()
 })
+
+const fileList = reactive({})
+let test = ref("12345")
 const getFileList = (token) => {
-  console.log("test1")
   let isConvertFinished = true
   axios.get(config.baseURL + "/uploadfile/filelist", {
     headers: {
@@ -70,15 +71,12 @@ const getFileList = (token) => {
       // "Authentication": getToken()
     }
   }).then(res => {
-    console.log(res)
     if (res.data.message === "fail") {
       return
     }
-    data.fileList = res.data.message
-    console.log(data.fileList)
-    console.log(res.data.message)
+    fileList.value = res.data.data
     data.isShowFilelist = true
-    for (let item in res.data.message) {
+    for (let item in res.data.data) {
       if (item.convert_stata === "processing") {
         isConvertFinished = false
         break
@@ -113,25 +111,22 @@ const inputFileChange = () => {
   const uploadFile = new FormData()
   // uploadFile is used to store files data
   // fileList is used to store files information
-  console.log(inputImage.files)
-  console.log(data.inputFile.files)
   data.files = data.inputFile.files
   for (let length = data.files.length, i = 0; i < length; i++) {
     uploadFile.append("files", data.files[i])
-    data.fileList[data.files[i].name] = {
+    fileList.value[data.files[i].name] = {
       "filename": data.files[i].name,
       "convert_state": "processing",
     }
   }
-
+  console.log(fileList)
   for (let length = inputImage.files.length, i = 0; i < length; i++) {
     uploadFile.append("files", inputImage.files[i])
-    data.fileList[inputImage.files[i].name] = {
+    fileList[inputImage.files[i].name] = {
       "filename": inputImage.files[i].name,
       "convert_state": "processing",
     }
   }
-  console.log(uploadFile)
   axios.put(config.baseURL + "/uploadfile", uploadFile, {
     headers: {
       'Accept': 'application/json',
@@ -184,15 +179,15 @@ const herfToAndroidPayTutorial = () => {
         </n-button>
       </div>
       <div v-if="data.isShowFilelist" class="filelist-wrapper">
-        <FileList :fileList="data.fileList" class="field-list"></FileList>
+        <FileList :fileList="fileList.value" class="field-list"></FileList>
       </div>
     </div>
     <div v-if="data.isShowPayArea" class="pay-area">
       <div class="price-counter">
-        <PriceCounter :fileList="data.fileList"></PriceCounter>
+        <PriceCounter :fileList="fileList.value"></PriceCounter>
       </div>
       <div class="pay-bottom">
-        <pay-button :fileList="data.fileList"></pay-button>
+        <pay-button :fileList="fileList.value"></pay-button>
       </div>
     </div>
   </div>

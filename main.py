@@ -41,7 +41,7 @@ async def root():
     # return JSONResponse(status_code=503, content={"message": "Item not found"})
     a = models.FileModel()
     a.filename  = "1"
-    return a.__dict__
+    return a
 @app.get("/status")
 async def status():
     return {"message": global_var.global_var_getter("status")}

@@ -11,7 +11,7 @@ from starlette.responses import FileResponse
 
 from global_var import global_var_setter, global_var_getter
 from convert import convert_docs, convert_images, convert_excel
-from models import FileModel
+from models import FileModel, ReturnResult
 import jwt
 
 router = APIRouter()
@@ -140,17 +140,14 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         payload = jwt.decode_token(Authentication)
         directory = payload.get("token")
         expire = payload.get("exp")
-        returnFiles = {}
         files_attribute = {}
         try:
             files_attribute = global_var_getter(directory)
         except BaseException:
-            pass
+            return ReturnResult(200, "success", files_attribute)
         else:
-            for key in files_attribute:
-                returnFiles.update({key: files_attribute[key].__dict__})
-    return {"message": returnFiles}
-
+            return ReturnResult(200, "success", files_attribute)
+    # return {"message": returnFiles  }
 
 
 class FileToRemove(BaseModel):
