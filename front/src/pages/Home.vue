@@ -9,13 +9,6 @@ import PayButton from "@/components/PayButton.vue";
 import PriceCounter from "@/components/PriceCounter.vue";
 import {IconFiles, IconPhoto, IconBook, IconBrandAndroid} from '@tabler/icons-vue';
 
-const data = reactive(
-    {
-      inputFile: null,
-      files: null,
-    }
-)
-
 async function getToken() {
   let token = ""
   token = await axios.get(config.baseURL + "/token/get")
@@ -46,11 +39,11 @@ const checkToken = () => {
 }
 
 let inputImage = reactive()
-
+let inputFile = reactive()
 onMounted(async () => {
   console.log(config.baseURL)
   document.title = "30栋304打印店"
-  data.inputFile = reactive(
+  inputFile = reactive(
       document.getElementById("input-file")
   )
   inputImage = reactive(
@@ -97,9 +90,8 @@ const getFileList = (token) => {
   return null
 }
 
-
 const chooseFile = () => {
-  data.inputFile.click()
+  inputFile.click()
 }
 const chooseImage = () => {
   inputImage.click()
@@ -109,11 +101,11 @@ const inputFileChange = () => {
   const uploadFile = new FormData()
   // uploadFile is used to store files data
   // fileList is used to store files information
-  data.files = data.inputFile.files
-  for (let length = data.files.length, i = 0; i < length; i++) {
-    uploadFile.append("files", data.files[i])
-    fileList.value[data.files[i].name] = {
-      "filename": data.files[i].name,
+  // data.files = data.inputFile.files
+  for (let length = inputFile.files.length, i = 0; i < length; i++) {
+    uploadFile.append("files",  inputFile.files[i])
+    fileList.value[inputFile.files[i].name] = {
+      "filename":  inputFile.files[i].name,
       "convert_state": "processing",
     }
   }

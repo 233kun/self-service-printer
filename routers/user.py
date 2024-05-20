@@ -123,6 +123,7 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
 
         files_temp[files[index].filename] = file_attribute
         files_temp2 = {}
+
     try:
         global_var_getter(directory)
     except BaseException as e:  # when file attributes is empty
