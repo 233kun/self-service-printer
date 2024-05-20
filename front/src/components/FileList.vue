@@ -79,7 +79,6 @@ const preview = (filename) => {
 </script>
 
 <template>
-  {{test}}
   <div class="filelist">
     <TransitionGroup name="list" tag="ul" class="upload-file-list">
       <li v-for="(item, index) in props.fileList" :key="item">

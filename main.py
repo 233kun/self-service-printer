@@ -39,9 +39,8 @@ global_var.global_var_setter("printer_status", "running")
 @app.get("/")
 async def root():
     # return JSONResponse(status_code=503, content={"message": "Item not found"})
-    a = models.FileModel()
-    a.filename  = "1"
-    return a
+
+    return models.ReturnResult(200, "111", models.FileModel)
 @app.get("/status")
 async def status():
     return {"message": global_var.global_var_getter("status")}

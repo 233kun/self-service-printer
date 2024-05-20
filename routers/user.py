@@ -143,6 +143,7 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         files_attribute = {}
         try:
             files_attribute = global_var_getter(directory)
+            print(files_attribute)
         except BaseException:
             return ReturnResult(200, "success", files_attribute)
         else:

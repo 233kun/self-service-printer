@@ -13,8 +13,6 @@ const data = reactive(
     {
       inputFile: null,
       files: null,
-      isShowFilelist: false,
-      isShowPayArea: false
     }
 )
 
@@ -62,7 +60,7 @@ onMounted(async () => {
 })
 
 const fileList = reactive({})
-let test = ref("12345")
+const isShowPayArea = ref(false)
 const getFileList = (token) => {
   let isConvertFinished = true
   axios.get(config.baseURL + "/uploadfile/filelist", {
@@ -75,7 +73,6 @@ const getFileList = (token) => {
       return
     }
     fileList.value = res.data.data
-    data.isShowFilelist = true
     for (let item in res.data.data) {
       if (item.convert_stata === "processing") {
         isConvertFinished = false
@@ -86,13 +83,14 @@ const getFileList = (token) => {
       }
     }
     if (isConvertFinished === true) {
-      if (JSON.stringify(res.data.message) !== "{}") {
-        data.isShowPayArea = true;
+      if (JSON.stringify(res.data.data) !== "{}") {
+        isShowPayArea.value = true;
       }
     }
     return "none"
   }).catch(
       error => {
+        console.log(error)
         ElMessage.error("初始化失败：error code 3")
       }
   )
@@ -178,11 +176,11 @@ const herfToAndroidPayTutorial = () => {
             <a class="button-text" style="color: #18a058">安卓无法支付点这</a></div>
         </n-button>
       </div>
-      <div v-if="data.isShowFilelist" class="filelist-wrapper">
+      <div class="filelist-wrapper">
         <FileList :fileList="fileList.value" class="field-list"></FileList>
       </div>
     </div>
-    <div v-if="data.isShowPayArea" class="pay-area">
+    <div v-if="isShowPayArea" class="pay-area">
       <div class="price-counter">
         <PriceCounter :fileList="fileList.value"></PriceCounter>
       </div>
