@@ -49,16 +49,6 @@ const checkToken = () => {
 
 let inputImage = reactive()
 let inputFile = reactive()
-onMounted(async () => {
-  document.title = "30栋304打印店"
-  inputFile = reactive(
-      document.getElementById("input-file")
-  )
-  inputImage = reactive(
-      document.getElementById("input-image")
-  )
-  checkToken()
-})
 
 const fileList = reactive({})
 const isShowPayArea = ref(false)
@@ -142,6 +132,17 @@ const inputFileChange = () => {
 const herfToAndroidPayTutorial = () => {
       window.location.href = "https://233kun.top"
 }
+
+onMounted(async () => {
+  document.title = "30栋304打印店"
+  inputFile = reactive(
+      document.getElementById("input-file")
+  )
+  inputImage = reactive(
+      document.getElementById("input-image")
+  )
+  checkToken()
+})
 </script>
 
 <template>
