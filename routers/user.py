@@ -17,14 +17,9 @@ import jwt
 router = APIRouter()
 
 
-@router.post("/test/")
-async def test(file: UploadFile):
-    return {"filename": file.filename}
-
-
-@router.get("/token/get")
+@router.get("/token/generation")
 async def get_token():
-    return {"token": jwt.create_token()}
+    return ReturnResult(200, "success", {"token": jwt.create_token()})
 
 
 class JwtToken(BaseModel):
@@ -37,10 +32,8 @@ async def renew_token(jwtToken: JwtToken):
     # return {jwtToken.token}
 
 
-
 @router.put("/uploadfile")
 async def create_upload_file(Authentication: Annotated[str | None, Header()], files: list[UploadFile]):
-
     if not jwt.verify_token(Authentication):
         return {"message": "fail"}
     payload = jwt.decode_token(Authentication)

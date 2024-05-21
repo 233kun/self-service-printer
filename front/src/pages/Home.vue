@@ -9,9 +9,9 @@ import PayButton from "@/components/PayButton.vue";
 import PriceCounter from "@/components/PriceCounter.vue";
 import {IconFiles, IconPhoto, IconBook, IconBrandAndroid} from '@tabler/icons-vue';
 
-async function getToken() {
+const getToken = () => {
   let token = ""
-  token = await axios.get(config.baseURL + "/token/get")
+  token = axios.get(config.baseURL + "/token/generation").data.token
   return token
 }
 
