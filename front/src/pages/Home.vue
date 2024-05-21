@@ -9,39 +9,47 @@ import PayButton from "@/components/PayButton.vue";
 import PriceCounter from "@/components/PriceCounter.vue";
 import {IconFiles, IconPhoto, IconBook, IconBrandAndroid} from '@tabler/icons-vue';
 
-const getToken = () => {
-  let token = ""
-  token = axios.get(config.baseURL + "/token/generation").data.token
+async function getToken() {
+  let token = ref()
+  await axios.get(config.baseURL + "/token/generation").then(
+      res => {
+        token = res.data.data.token
+      }
+  )
   return token
 }
 
-async function renewToken() {
-  let token = ""
-  token = axios.post(config.baseURL + "/token/renew", {
-    "token": window.localStorage.getItem("token")
-  })
+const renewToken = async (oldToken) => {
+  let token
+   await axios.post(config.baseURL + "/token/renew", {
+    "token": oldToken
+  }).then(res => {
+    token = res.data.data.token
+   })
   return token
 }
 
 const checkToken = () => {
   if (window.localStorage.getItem("token") == null) {
-    getToken().then(async (res) => {
-      window.localStorage.setItem("token", res.data.token)
-      getFileList(res.data.token)
-    })
+    getToken().then(
+        res => {
+          window.localStorage.setItem("token", res)
+        }
+    )
+    window.localStorage.setItem("token", getToken())
   } else {
-    renewToken().then((res) => {
-      console.log(res.data.token)
-      window.localStorage.setItem("token", res.data.token)
-      getFileList(res.data.token)
-    })
+    renewToken(window.localStorage.getItem("token")).then(
+        res => {
+           window.localStorage.setItem("token", res)
+          getFileList(window.localStorage.getItem("token"))
+        }
+    )
   }
 }
 
 let inputImage = reactive()
 let inputFile = reactive()
 onMounted(async () => {
-  console.log(config.baseURL)
   document.title = "30栋304打印店"
   inputFile = reactive(
       document.getElementById("input-file")
@@ -49,7 +57,7 @@ onMounted(async () => {
   inputImage = reactive(
       document.getElementById("input-image")
   )
-  await checkToken()
+  checkToken()
 })
 
 const fileList = reactive({})
