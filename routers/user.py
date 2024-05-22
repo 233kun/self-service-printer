@@ -28,9 +28,7 @@ class JwtToken(BaseModel):
 
 @router.post("/token/renew")
 async def renew_token(jwtToken: JwtToken):
-    return {"token": jwt.renew_token(jwtToken.token)}
-    # return {jwtToken.token}
-
+    return ReturnResult(200, "success", {"token": jwt.renew_token(jwtToken.token)})
 
 @router.put("/uploadfile")
 async def create_upload_file(Authentication: Annotated[str | None, Header()], files: list[UploadFile]):
@@ -161,9 +159,9 @@ async def create_item(fileToRemove: FileToRemove, Authentication: Annotated[str 
         files_attribute = global_var_getter(directory)
         files_attribute.pop(fileToRemove.filename)
         global_var_setter(directory, files_attribute)
-        return {"message": "success"}
+        return ReturnResult(200, "success", {})
     else:
-        return {"message": "fail"}
+        return ReturnResult(200, "error", {})
     # return {"message": fileToRemove.filename, "token": Authentication}
 
 
