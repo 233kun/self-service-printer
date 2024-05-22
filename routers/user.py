@@ -43,16 +43,16 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         mkdir(f"save_files/{directory}/raw")
         mkdir(f"save_files/{directory}/converted")
 
-    files_temp = {}
+    files_attributes = {}
     for index in range(len(files)):
-        file_attribute = FileModel()
-        file_attribute.filename = files[index].filename
-        file_attribute.convert_state = "processing"
+        file_attributes = FileModel()
+        file_attributes.filename = files[index].filename
+        file_attributes.convert_state = "processing"
         # file_attribute.total_pages =
-        file_attribute.print_copies = 1
+        file_attributes.print_copies = 1
         # file_attribute.print_range_start =
         # file_attribute.print_range_end =
-        file_attribute.print_side = "one-sided"
+        file_attributes.print_side = "one-sided"
 
         filetype = files[index].filename.rsplit(".", 1)[1]
         if filetype == "pdf":
@@ -64,11 +64,11 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             except Exception as e:
                 print(e)
                 global_var_setter(directory + files[index].filename, "error")
-                file_attribute.convert_state = "error"
+                file_attributes.convert_state = "error"
                 return {"message": "error"}
             else:
                 global_var_setter(directory + files[index].filename, "success")
-                file_attribute.convert_state = "success"
+                file_attributes.convert_state = "success"
 
         if filetype == "doc" or filetype == "docx":
             with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
@@ -78,13 +78,13 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             except Exception as e:
                 print(e)
                 global_var_setter(directory + files[index].filename, "error")
-                file_attribute.convert_state = "error"
+                file_attributes.convert_state = "error"
             else:
                 global_var_setter(directory + files[index].filename, "success")
                 reader = PdfReader(f"save_files/{directory}/converted/{files[index].filename.rsplit(".", 1)[0]}.pdf")
-                file_attribute.print_range_end = len(reader.pages)
-                file_attribute.total_pages = len(reader.pages)
-                file_attribute.convert_state = "success"
+                file_attributes.print_range_end = len(reader.pages)
+                file_attributes.total_pages = len(reader.pages)
+                file_attributes.convert_state = "success"
 
         if filetype == "xlsx" or filetype == "xls":
             with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
@@ -94,10 +94,10 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             except Exception as e:
                 print(e)
                 global_var_setter(directory + files[index].filename, "error")
-                file_attribute.convert_state = "error"
+                file_attributes.convert_state = "error"
             else:
                 global_var_setter(directory + files[index].filename, "success")
-                file_attribute.convert_state = "success"
+                file_attributes.convert_state = "success"
 
         if filetype == "jpeg" or filetype == "jpg" or filetype == "png":
             with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
@@ -107,23 +107,23 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             except Exception as e:
                 print(e)
                 global_var_setter(directory + files[index].filename, "error")
-                file_attribute.convert_state = "error"
+                file_attributes.convert_state = "error"
             else:
                 global_var_setter(directory + files[index].filename, "success")
-                file_attribute.convert_state = "success"
+                file_attributes.convert_state = "success"
 
-        files_temp[files[index].filename] = file_attribute
-        files_temp2 = {}
+        files_attributes[files[index].filename] = file_attributes
+        files_temp = {}
 
     try:
         global_var_getter(directory)
     except BaseException as e:  # when file attributes is empty
-        global_var_setter(directory, files_temp)
+        global_var_setter(directory, files_attributes)
         print(global_var_getter(directory))
     else:  # when file attributes is not empty
-        files_temp2 = global_var_getter(directory)
-        files_temp.update(files_temp2)
-        global_var_setter(directory, files_temp)
+        files_temp = global_var_getter(directory)
+        files_attributes.update(files_temp)
+        global_var_setter(directory, files_attributes)
     return ReturnResult(200, "success", {})
 
 

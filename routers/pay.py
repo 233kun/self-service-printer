@@ -33,7 +33,7 @@ class FileList(BaseModel):
     files: str
 
 
-@router.post("/pay/createBill")
+@router.post("/pay/bill/create")
 def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header()]):
     payload = jwt.decode_token(Authentication)
     directory = payload.get("token")
@@ -41,6 +41,10 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
     files = json.loads(fileList.files)
     filenameArray = []
     price = Dinero(0, CNY)
+
+    file_attributes = {}
+    for file in files:
+        file_dict = files.get(file)
 
     for file in files:
         filedict = files.get(file)
