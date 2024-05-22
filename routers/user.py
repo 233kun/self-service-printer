@@ -124,7 +124,7 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         files_temp2 = global_var_getter(directory)
         files_temp.update(files_temp2)
         global_var_setter(directory, files_temp)
-    return {"message": "success"}
+    return ReturnResult(200, "success", {})
 
 
 @router.get("/uploadfile/filelist")
