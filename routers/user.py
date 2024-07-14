@@ -28,7 +28,8 @@ class JwtToken(BaseModel):
 
 @router.post("/token/renew")
 async def renew_token(jwtToken: JwtToken):
-    return ReturnResult(200, "success", {"token": jwt.renew_token(jwtToken.token)})
+    return ReturnResult(200, "success", {"token": jwt.renew_token(jwtToken.token.__str__())})
+
 
 @router.put("/uploadfile")
 async def create_upload_file(Authentication: Annotated[str | None, Header()], files: list[UploadFile]):
@@ -43,7 +44,7 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         mkdir(f"save_files/{directory}/raw")
         mkdir(f"save_files/{directory}/converted")
 
-    files_attributes = {}
+    files_attributes = []
     for index in range(len(files)):
         file_attributes = FileModel()
         file_attributes.filename = files[index].filename
@@ -82,8 +83,8 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             else:
                 global_var_setter(directory + files[index].filename, "success")
                 reader = PdfReader(f"save_files/{directory}/converted/{files[index].filename.rsplit(".", 1)[0]}.pdf")
-                file_attributes.print_range_end = len(reader.pages)
                 file_attributes.total_pages = len(reader.pages)
+                file_attributes.print_range_end = len(reader.pages)
                 file_attributes.convert_state = "success"
 
         if filetype == "xlsx" or filetype == "xls":
@@ -112,19 +113,17 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                 global_var_setter(directory + files[index].filename, "success")
                 file_attributes.convert_state = "success"
 
-        files_attributes[files[index].filename] = file_attributes
-        files_temp = {}
+        files_attributes.append(file_attributes)
 
     try:
         global_var_getter(directory)
     except BaseException as e:  # when file attributes is empty
         global_var_setter(directory, files_attributes)
-        print(global_var_getter(directory))
     else:  # when file attributes is not empty
-        files_temp = global_var_getter(directory)
-        files_attributes.update(files_temp)
-        global_var_setter(directory, files_attributes)
-    return ReturnResult(200, "success", {})
+        files_attributes_temp = global_var_getter(directory)
+        files_attributes_temp = files_attributes_temp + files_attributes
+        global_var_setter(directory, files_attributes_temp)
+    return ReturnResult(200, "success", files)
 
 
 @router.get("/uploadfile/filelist")
@@ -133,15 +132,14 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         payload = jwt.decode_token(Authentication)
         directory = payload.get("token")
         expire = payload.get("exp")
-        files_attribute = {}
+        files_attributes = {}
         try:
-            files_attribute = global_var_getter(directory)
-            print(files_attribute)
+            files_attributes = global_var_getter(directory)
         except BaseException:
-            return ReturnResult(200, "success", files_attribute)
+            return ReturnResult(200, "success", {'files_attributes': []})
         else:
-            return ReturnResult(200, "success", files_attribute)
-    # return {"message": returnFiles  }
+            print(ReturnResult(200, "success", {'files_attributes': global_var_getter(directory)}))
+            return ReturnResult(200, "success", {'files_attributes': global_var_getter(directory)})
 
 
 class FileToRemove(BaseModel):

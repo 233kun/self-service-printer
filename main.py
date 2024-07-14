@@ -38,6 +38,7 @@ global_var.global_var_setter("printer_status", "running")
 
 @app.get("/")
 async def root():
+    return models.FileBill()
     # return JSONResponse(status_code=503, content={"message": "Item not found"})
 
     return models.ReturnResult(200, "111", models.FileModel)

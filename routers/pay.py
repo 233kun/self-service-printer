@@ -21,48 +21,85 @@ from alipay.aop.api.request.AlipayTradePrecreateRequest import (
     AlipayTradePrecreateRequest,
 )
 
-import global_var
 import jwt
-import print_queue
-from print_queue import get_queue_size
+from global_var import global_var_setter, global_var_getter
+from models import FileModel, FileBill, FileList
+from print_queue import queue_push
 
 router = APIRouter()
 
 
-class FileList(BaseModel):
-    files: str
-
-
 @router.post("/pay/bill/create")
-def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header()]):
+def create_bill(request_body: FileList, Authentication: Annotated[str | None, Header()]):
     payload = jwt.decode_token(Authentication)
     directory = payload.get("token")
     expire = payload.get("exp")
-    files = json.loads(fileList.files)
-    filenameArray = []
+
+    files_attributes = request_body.fileList
+
     price = Dinero(0, CNY)
+    for file_attributes in files_attributes:
+        print_side = file_attributes.get('print_side')
+        print_copies = file_attributes.get('print_copies')
+        print_range_start = file_attributes.get('print_range_start')
+        print_range_end = file_attributes.get('print_range_end')
+        print_page_number = print_range_end - print_range_start + 1
 
-    file_attributes = {}
-    for file in files:
-        file_dict = files.get(file)
-
-    for file in files:
-        filedict = files.get(file)
-        converted_filename = file.rsplit(".", 1)[0] + ".pdf"
-        reader = PdfReader(f"save_files/{directory}/converted/{converted_filename}")
-        page_number = int(filedict.get("print_range_end")) - int(filedict.get("print_range_start")) + 1
-        total_page_number = len(reader.pages)
-        if not 1 <= int(filedict.get("print_range_end")) <= total_page_number or not 1 <= int(filedict.get("print_range_start")) <= total_page_number:
-            return {"message": "订单不合法"}
-        if not filedict.get("print_side"):
-            price = Dinero(0.2, CNY).multiply(page_number).multiply(int(filedict.get("print_copies"))).add(price)
-        if filedict.get("print_side"):
-            if page_number % 2 == 0:
-                price = Dinero(0.15, CNY).multiply(page_number).multiply(
-                    int(filedict.get("print_copies"))).add(price)
+        if print_side == 'one-sided':
+            price = Dinero(0.2, CNY).multiply(print_page_number).multiply(int(print_copies)).add(price)
+        if print_side == "two-sided-default" or print_side == "two-sided-short-edge" or print_side == "two-sided-long-edge":
+            if print_page_number % 2 == 0:
+                price = Dinero(0.15, CNY).multiply(print_page_number).multiply(int(print_copies)).add(price)
             else:
-                price = Dinero(0.15, CNY).multiply(page_number - 1).add(0.2).multiply(
-                    int(filedict.get("print_copies"))).add(price)
+                price = Dinero(0.15, CNY).multiply(print_page_number - 1).add(0.2).multiply(int(print_copies)).add(price)
+
+    bill_attributes = {'files_attributes': files_attributes, 'total_price': float(price.format()), 'out_trade_no': datetime.now().strftime('%Y%m%d%H%M%S%f')}
+    # bills_attributes = {}
+    # for filename in files:
+    #     bill_attributes = FileBill()
+    #     file_dict = files.get(filename)
+    #     bill_attributes.filename = file_dict.get("filename")
+    #     bill_attributes.convert_state = file_dict.get("convert_state")
+    #     bill_attributes.total_pages = file_dict.get("total_pages")
+    #     bill_attributes.print_copies = file_dict.get("print_copies")
+    #     bill_attributes.print_range_start = file_dict.get("print_range_start")
+    #     bill_attributes.print_range_end = file_dict.get("print_range_end")
+    #     bill_attributes.print_side = file_dict.get("print_side")
+    #     bills_attributes[filename] = bill_attributes
+
+    # for filename in bills_attributes:
+    #     price = Dinero(0, CNY)
+    #     bill_attributes = bills_attributes[filename]
+    #     print_side = bill_attributes.print_side
+    #     print_copies = bill_attributes.print_copies
+    #     page_number = int(bill_attributes.print_range_end) - int(bill_attributes.print_range_start)
+    #     if print_side == "one-sided":
+    #         price = Dinero(0.2, CNY).multiply(page_number).multiply(int(print_copies)).add(price)
+    #     if print_side == "two-sided-default" or print_side == "two-sided-short-edge" or print_side == "two-sided-long-edge":
+    #         if page_number % 2 == 0:
+    #             price = Dinero(0.15, CNY).multiply(page_number).multiply(int(print_copies)).add(price)
+    #         else:
+    #             price = Dinero(0.15, CNY).multiply(page_number - 1).add(0.2).multiply(int(print_copies)).add(price)
+    #     bills_attributes[filename].price = float(price.format())
+
+
+    # for file in files:
+    #     filedict = files.get(file)
+    #     converted_filename = file.rsplit(".", 1)[0] + ".pdf"
+    #     reader = PdfReader(f"save_files/{directory}/converted/{converted_filename}")
+    #     page_number = int(filedict.get("print_range_end")) - int(filedict.get("print_range_start")) + 1
+    #     total_page_number = len(reader.pages)
+    #     if not 1 <= int(filedict.get("print_range_end")) <= total_page_number or not 1 <= int(filedict.get("print_range_start")) <= total_page_number:
+    #         return {"message": "订单不合法"}
+    #     if not filedict.get("print_side"):
+    #         price = Dinero(0.2, CNY).multiply(page_number).multiply(int(filedict.get("print_copies"))).add(price)
+    #     if filedict.get("print_side"):
+    #         if page_number % 2 == 0:
+    #             price = Dinero(0.15, CNY).multiply(page_number).multiply(
+    #                 int(filedict.get("print_copies"))).add(price)
+    #         else:
+    #             price = Dinero(0.15, CNY).multiply(page_number - 1).add(0.2).multiply(
+    #                 int(filedict.get("print_copies"))).add(price)
 
     logging.basicConfig(
         level=logging.INFO,
@@ -84,7 +121,7 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
 
     model = AlipayTradeCreateModel()
     model.out_trade_no = directory + f"_{seed}"
-    model.total_amount = price.format()
+    model.total_amount = files_attributes[len(files_attributes)].get('total_price')
     model.subject = "30栋304打印店"
 
     request = AlipayTradePrecreateRequest(biz_model=model)
@@ -102,26 +139,41 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
         response = AlipayTradeCreateResponse()
         string = response.parse_response_content(response_content)
         print("https://qr.alipay.com/" + eval(response.body)['qr_code'].split("/")[-1])
-        os.mkdir(f"print_queue/{directory}_{seed}/")
-        for file in files:
-            filename = file.rsplit(".", 1)[0] + ".pdf"
+
+        out_trade_no = bill_attributes.get('out_trade_no')
+        os.mkdir(f"print_queue/{out_trade_no}/")
+        for file_attributes in bill_attributes.get('files_attributes'):
+            filename = file_attributes.get('filename')
+            filename_pdf = filename.rsplit(".", 1)[0] + ".pdf"
             os.replace(f"save_files/{directory}/converted/{filename}",
-                       f"print_queue/{directory}_{seed}/{filename}")
-            os.remove(f"save_files/{directory}/raw/{file}")
-            filedict = files.get(file)
-            print_ticket = {"file": filename,
-                            "out_trade_no": f"{directory}_{seed}",
-                            "sides": filedict.get("print_side"),
-                            "ranges": f"{filedict.get("print_range_start")}-{filedict.get("print_range_end")}",
-                            "copies": filedict.get("print_copies")}
-            global_var.global_var_setter(f"{directory}_{seed}_{filename}_print_ticket",
-                                         print_ticket)  # pending to free this var
-            print(global_var.global_var_getter(f"{directory}_{seed}_{filename}_print_ticket"))
-            print(f"{directory}_{seed}_{filename}_print_ticket")
-        global_var.global_var_setter(f"{directory}_{seed}_expire",
-                                     datetime.now().timestamp() + 60 * 60 * 2)  # free in files_dump.py event loop
-        # global_var.global_var_setter(f"{directory}_{seed}_is_paid", False)  # remove this attribute the future
-        print(seed)
+                       f"print_queue/{out_trade_no}/{filename}")
+            os.remove(f"save_files/{directory}/raw/{filename}")
+            global_var_setter('out_trade_no', bill_attributes)
+
+
+
+
+
+
+        # for file in files:
+        #     filename = file.rsplit(".", 1)[0] + ".pdf"
+        #     os.replace(f"save_files/{directory}/converted/{filename}",
+        #                f"print_queue/{directory}_{seed}/{filename}")
+        #     os.remove(f"save_files/{directory}/raw/{file}")
+        #     filedict = files.get(file)
+        #     print_ticket = {"file": filename,
+        #                     "out_trade_no": f"{directory}_{seed}",
+        #                     "sides": filedict.get("print_side"),
+        #                     "ranges": f"{filedict.get("print_range_start")}-{filedict.get("print_range_end")}",
+        #                     "copies": filedict.get("print_copies")}
+        #     global_var.global_var_setter(f"{directory}_{seed}_{filename}_print_ticket",
+        #                                  print_ticket)  # pending to free this var
+        #     print(global_var.global_var_getter(f"{directory}_{seed}_{filename}_print_ticket"))
+        #     print(f"{directory}_{seed}_{filename}_print_ticket")
+        # global_var.global_var_setter(f"{directory}_{seed}_expire",
+        #                              datetime.now().timestamp() + 60 * 60 * 2)  # free in files_dump.py event loop
+        # # global_var.global_var_setter(f"{directory}_{seed}_is_paid", False)  # remove this attribute the future
+        # print(seed)
         # 响应成功的业务处理
         if response.is_success():
             # 如果业务成功，可以通过response属性获取需要的值
@@ -143,15 +195,38 @@ def create_bill(fileList: FileList, Authentication: Annotated[str | None, Header
 
 @router.post("/pay/return")
 def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotated[str, Form()]):
+    if not trade_status == 'TRADE_SUCCESS':
+        return {"message": "error"}
+
+    try:
+            global_var_getter(out_trade_no).
+            return HTMLResponse(content="success", status_code=200)
+        except Exception as e:
+            bill_attributes = global_var_getter(out_trade_no)
+            # files_attributes = bill_attributes.get('files_attributes')
+            queue_push(bill_attributes)
+            return HTMLResponse(content="success", status_code=200)
+
+
+
+
+
+
+
+
+
+
+
+
+
     if not trade_status == "TRADE_SUCCESS":
         return {"message": "fail"}
-    # global_var.global_var_setter(f"{out_trade_no}_is_paid", True)  # remove this attribute the future
     files = os.listdir(f"print_queue/{out_trade_no}")
     for file in files:
         index = 0
         queue_size = get_queue_size()
         while True:
-            if not index < queue_size:
+            if not index < queue_size: #
                 print_queue.queue_push(global_var.global_var_getter(f"{out_trade_no}_{file}_print_ticket"))
                 break
             if print_queue.get_job(index).get("file") == file:

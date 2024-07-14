@@ -14,6 +14,7 @@ async function getToken() {
   await axios.get(config.baseURL + "/token/generation").then(
       res => {
         token = res.data.data.token
+        console.log(res.data)
       }
   )
   return token
@@ -50,20 +51,20 @@ const checkToken = () => {
 let inputImage = reactive()
 let inputFile = reactive()
 
-const fileList = reactive({})
+const fileList = reactive([])
 const isShowPayArea = ref(false)
 const getFileList = (token) => {
   let isConvertFinished = true
   axios.get(config.baseURL + "/uploadfile/filelist", {
     headers: {
       "Authentication": token
-      // "Authentication": getToken()
     }
   }).then(res => {
+    console.log(res.data)
     if (res.data.message === "fail") {
       return
     }
-    fileList.value = res.data.data
+    fileList.value = res.data.data.files_attributes
     for (let item in res.data.data) {
       if (item.convert_stata === "processing") {
         isConvertFinished = false
@@ -97,23 +98,19 @@ const chooseImage = () => {
 
 const inputFileChange = () => {
   const uploadFile = new FormData()
-  // uploadFile is used to store files data
-  // fileList is used to store files information
-  // data.files = data.inputFile.files
   for (let length = inputFile.files.length, i = 0; i < length; i++) {
     uploadFile.append("files",  inputFile.files[i])
-    fileList.value[inputFile.files[i].name] = {
+    fileList.value.push({
       "filename":  inputFile.files[i].name,
       "convert_state": "processing",
-    }
+    })
   }
-  console.log(fileList)
   for (let length = inputImage.files.length, i = 0; i < length; i++) {
     uploadFile.append("files", inputImage.files[i])
-    fileList[inputImage.files[i].name] = {
+    fileList.value.push({
       "filename": inputImage.files[i].name,
       "convert_state": "processing",
-    }
+    })
   }
   axios.put(config.baseURL + "/uploadfile", uploadFile, {
     headers: {
@@ -148,6 +145,7 @@ onMounted(async () => {
 <template>
   <div class="wrapper">
     <div>
+      {{fileList.value}}
       <div class="uploader-wrapper">
         <n-button type="primary" class="upload-button" @click="chooseFile()">
           <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx, .xls, .pdf" v-show="false"

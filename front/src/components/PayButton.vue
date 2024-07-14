@@ -16,8 +16,8 @@ const pay = () => {
     return
   }
   clickLock = true;
-  axios.post(config.baseURL + "/pay/createBill", {
-    "files": JSON.stringify(props.fileList)
+  axios.post(config.baseURL + "/pay/bill/create", {
+    "fileList": props.fileList
   }, {
     headers: {
               'Accept': 'application/json',

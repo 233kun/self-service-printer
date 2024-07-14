@@ -8,6 +8,7 @@ from starlette.responses import FileResponse
 from typing_extensions import Annotated
 
 import global_var
+from models import ReturnResult
 from print_queue import get_job, queue_remove, get_queue_size, queue_pop
 
 router = APIRouter()
@@ -16,17 +17,11 @@ router = APIRouter()
 @router.get("/printer/get_job")
 def printer_get_job():
     try:
-        get_job(0)
+        bill_attributes = get_job(0)
     except BaseException:
-        return {"message": "no jobs found"}
+        return ReturnResult(200, "success", {'queue_state': 'queue is empty'})
     else:
-        return {"message": "jobs found",
-                "file": get_job(0).get("file"),
-                "out_trade_no": get_job(0).get("out_trade_no"),
-                "sides": get_job(0).get("sides"),
-                "ranges": get_job(0).get("ranges"),
-                "copies": get_job(0).get("copies")
-                }
+        return ReturnResult(200, "success", {'queue_state': 'queue is not empty', 'jobs': bill_attributes.get('files_attributes')})
 
 
 @router.get("/printer/get_file")

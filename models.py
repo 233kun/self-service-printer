@@ -1,3 +1,6 @@
+from pydantic import BaseModel
+
+
 class FileModel:
     filename: str
     convert_state: str
@@ -13,10 +16,22 @@ class FileModel:
         self.print_side = "one-sided"
 
 
+class FileList(BaseModel):
+    fileList: list
+
+
+class FileBill(FileModel):
+    price: float
+
+    def __init__(self):
+        super().__init__()
+        self.price = 0.0
+
+
 class ReturnResult:
     code: int
     message: str
-    data: str
+    data: dict
 
     def __init__(self, code, message, data):
         self.code = code
