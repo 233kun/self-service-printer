@@ -3,12 +3,14 @@ from contextlib import asynccontextmanager
 from datetime import time
 
 import uvicorn
-from fastapi import FastAPI, UploadFile, Request
+from fastapi import FastAPI, UploadFile, Request, BackgroundTasks
 from fastapi_utilities import repeat_every
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from starlette.responses import FileResponse, HTMLResponse, JSONResponse
 
+import bills_global_var
+import global_test
 import models
 import print_queue
 from routers import user, printer
@@ -35,13 +37,21 @@ print_queue.init()
 global_var.global_var_setter("status", "")
 global_var.global_var_setter("printer_status", "running")
 
+global_test.init()
+global_test.setter('1', 1)
+bills_global_var.init()
+bills_global_var.init()
+
+
+
 
 @app.get("/")
 async def root():
+    print('start job')
     return models.FileBill()
     # return JSONResponse(status_code=503, content={"message": "Item not found"})
 
-    return models.ReturnResult(200, "111", models.FileModel)
+
 @app.get("/status")
 async def status():
     return {"message": global_var.global_var_getter("status")}
@@ -65,17 +75,18 @@ async def print_hello():
 
 
 async def dump_files_loop():
-        dump_save_files()
-        dump_queue_files()
+    dump_save_files()
+    dump_queue_files()
 
 
 @app.on_event('startup')
-    # async def startup_event():
-    #     asyncio.create_task(dump_files_loop())
+# async def startup_event():
+#     asyncio.create_task(dump_files_loop())
 @repeat_every(seconds=3)
 async def print_hello():
     dump_save_files()
     dump_queue_files()
+
 
 if __name__ == "__main__":
     startup()

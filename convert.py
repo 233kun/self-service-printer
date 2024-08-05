@@ -3,31 +3,25 @@ import os
 import img2pdf
 import win32com.client
 
+import convert_status_global_var
 import global_var
 
 
-def convert_docs(directory, filename):
-    # filelist = os.listdir(f"save_files/{directory}/raw")
-    # converted_filelist = os.listdir(f"save_files/{directory}/converted")
-
-    # for filename in filelist:  # prevent duplicate conversions
-    #     for converted_filename in converted_filelist:
-    #         if filename.rsplit(".", 1)[0] == converted_filename.rsplit(".", 1)[0]:
-    #             continue
-    # if filename.rsplit(".", 1)[1] == "pdf"
+def convert_docs(directory, filename, task_id):
     wdFormatPDF = 17
     word = win32com.client.Dispatch("Word.Application")
-    global_var.global_var_setter(directory + filename, "processing")
+    # global_var.global_var_setter(directory + filename, "processing")
     input_doc = os.path.abspath(f"save_files/{directory}/raw/{filename}")
     output_filename = filename.rsplit(".", 1)[0]
     output_pdf = os.path.abspath(f"save_files/{directory}/converted/{output_filename}.pdf")
-    print(input_doc)
-    print(output_pdf)
+    convert_status_global_var.setter(task_id, 'processing')
     global doc
     try:
         doc = word.Documents.Open(input_doc)
         doc.SaveAs(output_pdf, FileFormat=wdFormatPDF)
+        convert_status_global_var.setter(task_id, 'success')
     except Exception as e:
+        convert_status_global_var.setter(task_id, 'error')
         raise Exception(e)
     finally:
         doc.Close()

@@ -1,3 +1,6 @@
+import models
+
+
 def init():
     global _global_dict
     _global_dict = {}
@@ -15,6 +18,10 @@ def global_var_getter(key):
     # except:
     #     print('读取' + key + '失败\r\n')
     #     return "error"
+
+
+def global_var_isKey_exist(key):
+    return key in _global_dict
 
 
 def free_var(key):

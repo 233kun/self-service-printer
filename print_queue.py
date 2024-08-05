@@ -1,6 +1,10 @@
+import models
+
+
 def init():
     global print_queue
     print_queue = []
+    global test
 
 
 def queue_push(print_job):

@@ -1,14 +1,18 @@
+import asyncio
 import os.path
+import threading
 from datetime import time
 from os import mkdir
 from shutil import copyfile
 from typing import Annotated
 
-from fastapi import APIRouter, UploadFile, Header
+from fastapi import APIRouter, UploadFile, Header, BackgroundTasks
 from pydantic import BaseModel
 from pypdf import PdfReader
 from starlette.responses import FileResponse
 
+import global_test
+import models
 from global_var import global_var_setter, global_var_getter
 from convert import convert_docs, convert_images, convert_excel
 from models import FileModel, ReturnResult
@@ -32,7 +36,7 @@ async def renew_token(jwtToken: JwtToken):
 
 
 @router.put("/uploadfile")
-async def create_upload_file(Authentication: Annotated[str | None, Header()], files: list[UploadFile]):
+async def create_upload_file(Authentication: Annotated[str | None, Header()], files: list[UploadFile], background_tasks: BackgroundTasks):
     if not jwt.verify_token(Authentication):
         return {"message": "fail"}
     payload = jwt.decode_token(Authentication)
@@ -44,21 +48,24 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         mkdir(f"save_files/{directory}/raw")
         mkdir(f"save_files/{directory}/converted")
 
+
     files_attributes = []
     for index in range(len(files)):
+        with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
+            f.write(files[index].file.read())
+
         file_attributes = FileModel()
         file_attributes.filename = files[index].filename
         file_attributes.convert_state = "processing"
-        # file_attribute.total_pages =
         file_attributes.print_copies = 1
         # file_attribute.print_range_start =
         # file_attribute.print_range_end =
         file_attributes.print_side = "one-sided"
 
+        filename_hash = hash(files[index].filename + directory)
+
         filetype = files[index].filename.rsplit(".", 1)[1]
         if filetype == "pdf":
-            with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
-                f.write(files[index].file.read())
             try:
                 copyfile(f'save_files/{directory}/raw/{files[index].filename}',
                          f'save_files/{directory}/converted/{files[index].filename}')
@@ -72,14 +79,13 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                 file_attributes.convert_state = "success"
 
         if filetype == "doc" or filetype == "docx":
-            with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
-                f.write(files[index].file.read())
             try:
-                convert_docs(directory, files[index].filename)
+                background_tasks.add_task(convert_docs, convert_docs, files[index].filename, )
             except Exception as e:
-                print(e)
-                global_var_setter(directory + files[index].filename, "error")
-                file_attributes.convert_state = "error"
+                pass
+                # print(e)
+                # global_var_setter(directory + files[index].filename, "error")
+                # file_attributes.convert_state = "error"
             else:
                 global_var_setter(directory + files[index].filename, "success")
                 reader = PdfReader(f"save_files/{directory}/converted/{files[index].filename.rsplit(".", 1)[0]}.pdf")
@@ -88,8 +94,6 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                 file_attributes.convert_state = "success"
 
         if filetype == "xlsx" or filetype == "xls":
-            with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
-                f.write(files[index].file.read())
             try:
                 convert_excel(directory, files[index].filename)
             except Exception as e:
@@ -101,8 +105,6 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                 file_attributes.convert_state = "success"
 
         if filetype == "jpeg" or filetype == "jpg" or filetype == "png":
-            with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
-                f.write(files[index].file.read())
             try:
                 convert_images(directory, files[index].filename)
             except Exception as e:
@@ -171,3 +173,9 @@ async def preview_pdf(filename: str, Authentication: str):
     directory = payload.get("token")
     converted_filename = filename.rsplit(".", 1)[0] + ".pdf"
     return FileResponse(f"save_files/{directory}/converted/{converted_filename}")
+
+
+@router.get("/user/test")
+async def user_test():
+    print(    global_test.getter('1'))
+    return global_test.getter('1')

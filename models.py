@@ -9,6 +9,7 @@ class FileModel:
     print_range_start: int
     print_range_end: int
     print_side: str
+    folder: str
 
     def __init__(self):
         self.print_copies = 1
@@ -37,3 +38,19 @@ class ReturnResult:
         self.code = code
         self.message = message
         self.data = data
+
+
+class GlobalVar:
+    _global_var: dict
+
+    def __init__(self):
+        self._global_dict = {}
+
+    def setter(self, key, value):
+        self._global_dict[key] = value
+
+    def getter(self, key):
+        return self._global_dict[key]
+
+    def free(self, key):
+        del self._global_dict[key]

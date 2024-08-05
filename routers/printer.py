@@ -16,30 +16,16 @@ router = APIRouter()
 
 @router.get("/printer/get_job")
 def printer_get_job():
-    try:
-        bill_attributes = get_job(0)
-    except BaseException:
+    if get_queue_size() == 0:
         return ReturnResult(200, "success", {'queue_state': 'queue is empty'})
-    else:
+    if get_queue_size() > 0:
+        bill_attributes = get_job(0)
         return ReturnResult(200, "success", {'queue_state': 'queue is not empty', 'jobs': bill_attributes.get('files_attributes')})
 
 
 @router.get("/printer/get_file")
 def get_file(out_trade_no: str, file: str):
     return FileResponse(f"print_queue/{out_trade_no}/{file}")
-
-    # try:
-    #     task_index = 0
-    #     while True:
-    #         if not global_var.global_var_getter(get_task(task_index)):
-    #             raise HTTPException(status_code=404, detail="404 not found")
-    #         files = os.listdir(f"print_queue/get_task(task_index)")
-    #         for file in files:
-    #             return FileResponse(f"print_queue/get_task(task_index)")
-    #             break
-
-    # except:
-    #     print("task is empty")
 
 
 class UpdateJob(BaseModel):
