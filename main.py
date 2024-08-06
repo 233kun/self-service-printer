@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from starlette.responses import FileResponse, HTMLResponse, JSONResponse
 
 import bills_global_var
+import files_attributes_global_var
 import global_test
 import models
 import print_queue
@@ -38,17 +39,15 @@ global_var.global_var_setter("status", "")
 global_var.global_var_setter("printer_status", "running")
 
 global_test.init()
-global_test.setter('1', 1)
 bills_global_var.init()
-bills_global_var.init()
+files_attributes_global_var.init()
 
 
 
 
 @app.get("/")
 async def root():
-    print('start job')
-    return models.FileBill()
+    pass
     # return JSONResponse(status_code=503, content={"message": "Item not found"})
 
 
