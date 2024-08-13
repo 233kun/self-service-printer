@@ -36,7 +36,6 @@ async def renew_token(jwtToken: JwtToken):
     return ReturnResult(200, "success", {"token": jwt.renew_token(jwtToken.token.__str__())})
 
 
-
 @router.put("/uploadfile")
 async def create_upload_file(Authentication: Annotated[str | None, Header()], files: list[UploadFile],
                              background_tasks: BackgroundTasks):
@@ -51,21 +50,34 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         mkdir(f"save_files/{directory}/raw")
         mkdir(f"save_files/{directory}/converted")
 
-    files_attributes = []
     for index in range(len(files)):
+        print(files)
         with open(f'save_files/{directory}/raw/{files[index].filename}', "wb") as f:
             f.write(files[index].file.read())
 
         file_attributes = FileModel()
         file_attributes.filename = files[index].filename
-        file_attributes.convert_state = "pending"
+        file_attributes.convert_state = "processing" # pending
         file_attributes.print_copies = 1
-        # file_attribute.print_range_start =
-        # file_attribute.print_range_end =
+        file_attributes.print_range_start = 1
+        file_attributes.print_range_end = 1
         file_attributes.print_side = "one-sided"
 
-        files_attributes_global_var.setter(directory, files_attributes)
-
+        try:
+            files_attributes = files_attributes_global_var.getter(directory)
+            files_attributes.append(file_attributes)
+            files_attributes_global_var.setter(directory, files_attributes)
+        except Exception as e:
+            files_attributes = [file_attributes]
+            files_attributes_global_var.setter(directory, files_attributes)
+        # files_attributes = []
+        # try:
+        #     files_attributes = files_attributes_global_var.getter(directory)
+        #     files_attributes.append(file_attributes)
+        #     files_attributes_global_var.setter(directory, files_attributes)
+        # except BaseException as e:  # when file attributes is empty
+        #     files_attributes.append(file_attributes)
+        #     files_attributes_global_var.setter(directory, files_attributes)
         filetype = files[index].filename.rsplit(".", 1)[1]
         if filetype == "pdf":
             try:
@@ -79,10 +91,8 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
             else:
                 global_var_setter(directory + files[index].filename, "success")
                 file_attributes.convert_state = "success"
-
         if filetype == "doc" or filetype == "docx":
             background_tasks.add_task(convert_docs, directory, files[index].filename)
-
         if filetype == "xlsx" or filetype == "xls":
             try:
                 convert_excel(directory, files[index].filename)
@@ -105,18 +115,7 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                 global_var_setter(directory + files[index].filename, "success")
                 file_attributes.convert_state = "success"
 
-        files_attributes.append(file_attributes)
-
-        try:
-            files_attributes_global_var.getter(directory)
-        except BaseException as e:  # when file attributes is empty
-            files_attributes_global_var.setter(directory, files_attributes)
-        else:  # when file attributes is not empty
-            files_attributes_temp = files_attributes_global_var.getter(directory)
-            files_attributes_temp = files_attributes_temp + files_attributes
-            files_attributes_global_var.setter(directory, files_attributes_temp)
-            print(2411)
-            return ReturnResult(200, "success", files)
+    return ReturnResult(200, "success", files)
 
 
 @router.get("/uploadfile/filelist")
@@ -127,15 +126,32 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         expire = payload.get("exp")
         files_attributes = {}
         try:
-            files_attributes = global_var_getter(directory)
-        except BaseException:
+            return ReturnResult(200, "success", {'files_attributes': files_attributes_global_var.getter(directory)})
+            # return ReturnResult(200, "success", {'files_attributes': global_var_getter(directory)})
+        except BaseException as e:
             return ReturnResult(200, "success", {'files_attributes': []})
-        else:
-            print(ReturnResult(200, "success", {'files_attributes': files_attributes_global_var.getter(directory)}))
-            # return ReturnResult(200, "success", {'files_attributes': files_attributes_global_var.getter(directory)})
-            print(global_var_getter(directory))
-            print(files_attributes_global_var.getter(directory))
-            return ReturnResult(200, "success", {'files_attributes': global_var_getter(directory)})
+
+
+@router.get("/stest")
+async def get_ftest(key, value):
+    return files_attributes_global_var.setter(key, value)
+
+
+@router.get("/gtest")
+async def get_ftest(key):
+    return files_attributes_global_var.getter(key)
+
+    # try:
+    #     files_attributes = global_var_getter(directory)
+    # except BaseException:
+    #     return ReturnResult(200, "success", {'files_attributes': []})
+    # else:
+    #     print(ReturnResult(200, "success", {'files_attributes': files_attributes_global_var.getter(directory)}))
+    #     # return ReturnResult(200, "success", {'files_attributes': files_attributes_global_var.getter(directory)})
+    #     print(global_var_getter(directory))
+    #     print(files_attributes_global_var.getter(directory))
+    #     return ReturnResult(200, "success", {'files_attributes': global_var_getter(directory)})
+
 
 @router.get("/uploadfile/convert_status")
 async def get_convert_status(Authentication: Annotated[str | None, Header()]):
@@ -149,6 +165,8 @@ async def get_convert_status(Authentication: Annotated[str | None, Header()]):
         for file_attributes in files_attributes:
             if file_attributes.convert_state == "processing":
                 converting_filenames.append(file_attributes.filename)
+        if len(converting_filenames) == 0:
+            return ReturnResult(200, "success", {})  # if no processing files, return success
 
         start_unix_timestamp = time.time()
         while True:
@@ -159,8 +177,8 @@ async def get_convert_status(Authentication: Annotated[str | None, Header()]):
             for file_attributes in files_attributes:
                 for converting_filename in converting_filenames:
                     if file_attributes.filename == converting_filename:
-                        file_attributes.convert_state = "success"
-                        return ReturnResult(200, "success", {})
+                        if file_attributes.convert_state == "success":
+                            return ReturnResult(200, "success", {})
     return ReturnResult(200, "success", {})
 
 

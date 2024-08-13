@@ -22,11 +22,11 @@ async function getToken() {
 
 const renewToken = async (oldToken) => {
   let token
-   await axios.post(config.baseURL + "/token/renew", {
+  await axios.post(config.baseURL + "/token/renew", {
     "token": oldToken
   }).then(res => {
     token = res.data.data.token
-   })
+  })
   return token
 }
 
@@ -41,53 +41,110 @@ const checkToken = () => {
   } else {
     renewToken(window.localStorage.getItem("token")).then(
         res => {
-           window.localStorage.setItem("token", res)
-          getFileList(window.localStorage.getItem("token"))
+          window.localStorage.setItem("token", res)
+          setFileList(window.localStorage.getItem("token"))
         }
     )
   }
 }
 
-let inputImage = reactive()
-let inputFile = reactive()
-
-const fileList = reactive([])
-const isShowPayArea = ref(false)
-const getFileList = (token) => {
-  let isConvertFinished = true
-  axios.get(config.baseURL + "/uploadfile/filelist", {
+const getFilesAttributes = async (token) => {
+  let files_attributes
+  await axios.get(config.baseURL + "/uploadfile/filelist", {
     headers: {
       "Authentication": token
     }
   }).then(res => {
-    console.log(res.data)
-    if (res.data.message === "fail") {
-      return
-    }
-    fileList.value = res.data.data.files_attributes
-    for (let item in res.data.data) {
-      if (item.convert_stata === "processing") {
-        isConvertFinished = false
-        break
-      }
-      if (item.convert_stata === "error") {
-        isConvertFinished = false
-      }
-    }
-    if (isConvertFinished === true) {
-      if (JSON.stringify(res.data.data) !== "{}") {
-        isShowPayArea.value = true;
-      }
-    }
-    return "none"
-  }).catch(
-      error => {
-        console.log(error)
-        ElMessage.error("初始化失败：error code 3")
-      }
-  )
-  return null
+    files_attributes = res.data.data.files_attributes
+  })
+    return files_attributes
 }
+
+const lPollConvertStatus = async (token) => { //long polling
+  let message
+  await axios.get(config.baseURL + '/uploadfile/convert_status', {
+    headers: {
+      "Authentication": token
+    }
+  }).then(res => {
+    message = res.data.message
+  })
+  return message
+}
+const fileList = reactive([])
+const isShowPayArea = ref(false)
+const setFileList = async (token) => {
+  await getFilesAttributes(token).then(res => {
+    fileList.value = res
+  })
+  for (let file of fileList.value) {
+    if (file.convert_state === 'processing' || file.convert_state === 'pending') {
+      lPollConvertStatus(token).then(res => {
+        if (res === 'success') {
+          setFileList(token)
+        }
+      })
+    }
+  }
+}
+// const getFileList = (token) => {
+//   axios.get(config.baseURL + "/uploadfile/filelist", {
+//     headers: {
+//       "Authentication": token
+//     }
+//   }).then(res => {
+//         fileList.value = res.data.data.files_attributes
+//         for (let item in fileList) {
+//           if (item.convert_state === 'pending' || item.convert_state === 'pending') {
+//             axios.get(config.baseURL + '/uploadfile/convert_status', {
+//               headers: {
+//                 'Authentication': token,
+//               }
+//             }).then(res => {
+//               getFileList(token)
+//             })
+//           }
+//         }
+//       }
+//   )
+// }
+
+
+// const getFileList = (token) => {
+//   let isConvertFinished = true
+//   axios.get(config.baseURL + "/uploadfile/filelist", {
+//     headers: {
+//       "Authentication": token
+//     }
+//   }).then(res => {
+//     console.log(res.data)
+//     if (res.data.message === "fail") {
+//       return
+//     }
+//     fileList.value = res.data.data.files_attributes
+//     for (let item in res.data.data) {
+//       if (item.convert_stata === "processing") {
+//         isConvertFinished = false
+//         break
+//       }
+//       if (item.convert_stata === "error") {
+//         isConvertFinished = false
+//       }
+//     }
+//     if (isConvertFinished === true) {
+//       if (JSON.stringify(res.data.data) !== "{}") {
+//         isShowPayArea.value = true;
+//       }
+//     }
+//     return "none"
+//   }).catch(
+//       error => {
+//         console.log(error)
+//         ElMessage.error("初始化失败：error code 3")
+//       }
+//   )
+//   return null
+// }
 
 const chooseFile = () => {
   inputFile.click()
@@ -95,13 +152,14 @@ const chooseFile = () => {
 const chooseImage = () => {
   inputImage.click()
 }
-
-const inputFileChange = () => {
+let inputImage = reactive()
+let inputFile = reactive()
+const handleFormFilesInput = () => { //handleFileUpload
   const uploadFile = new FormData()
   for (let length = inputFile.files.length, i = 0; i < length; i++) {
-    uploadFile.append("files",  inputFile.files[i])
+    uploadFile.append("files", inputFile.files[i])
     fileList.value.push({
-      "filename":  inputFile.files[i].name,
+      "filename": inputFile.files[i].name,
       "convert_state": "processing",
     })
   }
@@ -112,6 +170,7 @@ const inputFileChange = () => {
       "convert_state": "processing",
     })
   }
+  console.log(uploadFile)
   axios.put(config.baseURL + "/uploadfile", uploadFile, {
     headers: {
       'Accept': 'application/json',
@@ -120,17 +179,20 @@ const inputFileChange = () => {
     }
   }).then(
       res => {
-        getFileList(window.localStorage.getItem("token"))
+        setFileList(window.localStorage.getItem("token"))
       }
   ).then((error) => {
     console.log(error)
   })
 }
 const herfToAndroidPayTutorial = () => {
-      window.location.href = "https://233kun.top"
+  window.location.href = "https://233kun.top"
 }
 
 onMounted(async () => {
+  getFilesAttributes(window.localStorage.getItem("token")).then(res => {
+    console.log(res)
+  })
   document.title = "30栋304打印店"
   inputFile = reactive(
       document.getElementById("input-file")
@@ -145,18 +207,18 @@ onMounted(async () => {
 <template>
   <div class="wrapper">
     <div>
-      {{fileList.value}}
+      {{ fileList.value }}
       <div class="uploader-wrapper">
         <n-button type="primary" class="upload-button" @click="chooseFile()">
           <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx, .xls, .pdf" v-show="false"
-                 @change="inputFileChange">
+                 @change="handleFormFilesInput">
           <div class="button-image-and-font">:
             <IconFiles/>
             <a class="button-text">打印文档</a></div>
         </n-button>
         <div class="upload-button-wrapper">
           <n-button color="#5B5B5B" class="upload-image-button" @click="chooseImage()">
-            <input type="file" multiple id="input-image" accept=".jpg" v-show="false" @change="inputFileChange">
+            <input type="file" multiple id="input-image" accept=".jpg" v-show="false" @change="handleFormFilesInput">
             <div class="button-image-and-font">
               <IconPhoto/>
               <a class="button-text">打印图片</a></div>
@@ -169,7 +231,7 @@ onMounted(async () => {
         </div>
         <n-button strong secondary type="primary" class="android-pay-tutorial-button">
           <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx,.pdf" v-show="false"
-                 @change="inputFileChange">
+                 @change="handleFormFilesInput">
           <div class="button-image-and-font" @click="herfToAndroidPayTutorial()">
             <IconBrandAndroid/>
             <a class="button-text" style="color: #18a058">安卓无法支付点这</a></div>
@@ -235,6 +297,7 @@ html, body, #app {
   box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
   margin-top: 20px;
 }
+
 .android-pay-tutorial-button {
   width: 90%;
   padding-top: 10%;
@@ -243,6 +306,7 @@ html, body, #app {
   box-shadow: 0 3px 6px rgba(0, 0, 0, .14);
   margin-top: 20px;
 }
+
 .button-image-and-font {
   display: flex;
   align-items: center;

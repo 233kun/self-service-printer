@@ -11,18 +11,24 @@ import global_var
 
 
 def convert_docs(directory, filename):
-    pythoncom.CoInitialize()
-    wdFormatPDF = 17
-    word = win32com.client.Dispatch("Word.Application")
-    # global_var.global_var_setter(directory + filename, "processing")
-    input_doc = os.path.abspath(f"save_files/{directory}/raw/{filename}")
-    output_filename = filename.rsplit(".", 1)[0]
-    output_pdf = os.path.abspath(f"save_files/{directory}/converted/{output_filename}.pdf")
     files_attributes = files_attributes_global_var.getter(directory)
 
     for index in range(len(files_attributes)):
         if files_attributes[index].filename == filename:
             files_attributes[index].convert_state = 'processing'
+    files_attributes_global_var.setter(directory, files_attributes)
+
+    pythoncom.CoInitialize()
+    wdFormatPDF = 17
+    word = win32com.client.Dispatch("Word.Application")
+
+    input_doc = os.path.abspath(f"save_files/{directory}/raw/{filename}")
+    output_filename = filename.rsplit(".", 1)[0]
+    output_pdf = os.path.abspath(f"save_files/{directory}/converted/{output_filename}.pdf")
+
+    for file_attributes in files_attributes:
+        if file_attributes.filename == filename:
+            file_attributes.convert_state = 'processing'
     files_attributes_global_var.setter(directory, files_attributes)
 
     global doc
@@ -33,16 +39,17 @@ def convert_docs(directory, filename):
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'success'
 
-            reader = PdfReader(f"save_files/{directory}/converted/{file_attributes.filename.rsplit(".", 1)[0]}.pdf")
-            file_attributes.total_pages = len(reader.pages)
-            file_attributes.print_range_end = len(reader.pages)
+                reader = PdfReader(f"save_files/{directory}/converted/{file_attributes.filename.rsplit(".", 1)[0]}.pdf")
+                file_attributes.total_pages = len(reader.pages)
+                file_attributes.print_range_end = len(reader.pages)
 
-        global_var.global_var_setter(directory, files_attributes)
+        files_attributes_global_var.setter(directory, files_attributes)
     except Exception as e:
+        #########need to rewrite#######3
         for index in range(len(files_attributes)):
             if files_attributes[index].filename == filename:
                 files_attributes[index].convert_state = 'error'
-        global_var.global_var_setter(directory, files_attributes)
+        # global_var.global_var_setter(directory, files_attributes)
         raise Exception(e)
     finally:
         doc.Close()

@@ -35,12 +35,13 @@ app.add_middleware(
 )
 global_var.init()  # init in main function
 print_queue.init()
-global_var.global_var_setter("status", "")
+global_var.global_var_setter(1234, "sdsadasdasd")
 global_var.global_var_setter("printer_status", "running")
 
 global_test.init()
 bills_global_var.init()
 files_attributes_global_var.init()
+files_attributes_global_var.setter(1234,"asdasda")
 
 
 
