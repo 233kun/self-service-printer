@@ -14,8 +14,8 @@ import config from "@/assets/config.js";
 import {useMessage} from 'naive-ui'
 import {ElMessage} from 'element-plus'
 import {onBeforeMount, onBeforeUnmount, onMounted, onUnmounted, onUpdated, reactive, ref, toRef, watch} from "vue";
-
-const props = defineProps({
+import home from '../pages/Home.vue'
+  const props = defineProps({
   fileList: {
     type: Object
   }
@@ -57,7 +57,7 @@ const removeFile = (filename, index) => {
     }
   }).then(res => {
     if (res.data.message === "success") {
-      delete props.fileList[filename]
+      home.getFilesAttributes(window.localStorage.getItem("token"))
     }
   }).catch(error => {
         ElMessage.error("删除失败")
@@ -74,7 +74,9 @@ const handleConvertState = (state) => {
   return true
 }
 const preview = (filename) => {
-  window.open('https://print.233kun.top/preview/' + `filename=${filename}&Authentication=${window.localStorage.getItem("token")}`)
+
+        console.log(props.fileList)
+  // window.open('https://print.233kun.top/preview/' + `filename=${filename}&Authentication=${window.localStorage.getItem("token")}`)
 }
 </script>
 
@@ -124,6 +126,7 @@ const preview = (filename) => {
                 <a class="slash">  </a>
                 <IconMinus/>
                 <el-input class="input-form" v-model="item.print_range_end" :placeholder="item.total_pages"/>
+<!--                type error-->
               </div>
             </div>
             <div class="print-side">
@@ -134,7 +137,6 @@ const preview = (filename) => {
                     v-model="item.print_side"
                     placeholder="Select"
                     size="large"
-                    default-first-option="one-sided"
                 >
                   <el-option
                       v-for="item in sideOption"
@@ -142,6 +144,8 @@ const preview = (filename) => {
                       :label="item.label"
                       :value="item.value"
                   />
+<!--                                      default-first-option="one-sided"-->
+
                 </el-select>
               </div>
             </div>

@@ -17,7 +17,6 @@ class FileModel:
         self.print_side = "one-sided"
 
 
-
 class FileList(BaseModel):
     fileList: list
 
@@ -28,6 +27,10 @@ class FileBill(FileModel):
     def __init__(self):
         super().__init__()
         self.price = 0.0
+
+
+class RemoveFilename(BaseModel):
+    filename: str
 
 
 class ReturnResult:

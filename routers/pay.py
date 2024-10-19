@@ -1,16 +1,16 @@
 import os
+import time
 from datetime import datetime
 
 from Crypto.Random import random
 from dinero import Dinero
 from dinero.currencies import CNY
-from fastapi import APIRouter, Body, Form, Header
+from fastapi import APIRouter, Form, Header
 from starlette.responses import HTMLResponse
-from typing_extensions import Any, Annotated
+from typing_extensions import Annotated
 
 import logging
 import traceback
-from alipay.aop.api.request.AlipayTradeQueryRequest import AlipayTradeQueryRequest
 from alipay.aop.api.AlipayClientConfig import AlipayClientConfig
 from alipay.aop.api.DefaultAlipayClient import DefaultAlipayClient
 from alipay.aop.api.domain.AlipayTradeCreateModel import AlipayTradeCreateModel
@@ -20,10 +20,9 @@ from alipay.aop.api.request.AlipayTradePrecreateRequest import (
 )
 
 import jwt
-import bills_global_var
-import print_queue
-from global_var import global_var_setter, global_var_getter, global_var_isKey_exist
-from models import FileModel, FileBill, FileList
+from global_vars import bills_global_var
+from global_var import global_var_isKey_exist
+from models import FileList
 from print_queue import queue_push
 
 router = APIRouter()
@@ -51,7 +50,7 @@ def create_bill(request_body: FileList, Authentication: Annotated[str | None, He
             else:
                 price = Dinero(0.15, CNY).multiply(print_page_number - 1).add(0.2).multiply(int(print_copies)).add(price)
     out_trade_no = datetime.now().strftime('%Y%m%d%H%M%S%f')
-    bill_attributes = {'files_attributes': files_attributes, 'folder': directory, 'total_price': float(price.format()), 'out_trade_no': out_trade_no}
+    bill_attributes = {'files_attributes': files_attributes, 'folder': directory, 'total_price': float(price.format()), 'out_trade_no': out_trade_no, 'expiry': int(time.time()) + 60 * 60 * 3 + 60}
     bills_global_var.setter(out_trade_no, bill_attributes)
 
     logging.basicConfig(
@@ -68,9 +67,6 @@ def create_bill(request_body: FileList, Authentication: Annotated[str | None, He
     alipay_client_config.alipay_public_key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiR4YO4wl+fdo9r/mVJoIZkO+6tIR5cl3ynIguJJRIF5zLfWUHz5ACpmEVsBefuIvcyPe4FCVypR1LsXCcmlq1bv1dIAajZKrxnjD2A+ydITB7DhE+fKxbn2EPg5ax2ttQ7NR6ZedBREmwH9cnJVOmFdQ8tIxKinN3coKqP/6cNyT0TIKUr8OM2dw2oJ9wALHq8yYDbTEtYpVww54ogFJBCD5+z8Eo/yeG1Q/AhaTTPr3sQgUiDcW1ERl/grEqAeq7CBElJC1rGc2lwUky+lcusd2bP8+Utn6fQeyAbymGn1K2LGzXVTBq7G0IVwLq8PqAkP6T+/QdKjjO2m7Hz7lxQIDAQAB"
     client = DefaultAlipayClient(alipay_client_config, logger)
 
-    seed = ""
-    for i in range(6):
-        seed = seed + str(random.randint(0, 9))
     model = AlipayTradeCreateModel()
     model.out_trade_no = bill_attributes.get('out_trade_no')
     model.total_amount = bill_attributes.get('total_price')

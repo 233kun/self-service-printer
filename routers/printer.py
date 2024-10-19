@@ -1,15 +1,10 @@
-import json
-import os
-import traceback
-
-from fastapi import APIRouter, HTTPException
-from pydantic import Json, BaseModel
+from fastapi import APIRouter
+from pydantic import BaseModel
 from starlette.responses import FileResponse
-from typing_extensions import Annotated
 
 import global_var
 from models import ReturnResult
-from print_queue import get_job, queue_remove, get_queue_size, queue_pop
+from print_queue import get_job, get_queue_size, queue_pop
 
 router = APIRouter()
 

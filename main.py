@@ -1,26 +1,17 @@
 import asyncio
-from contextlib import asynccontextmanager
-from datetime import time
 
 import uvicorn
-from fastapi import FastAPI, UploadFile, Request, BackgroundTasks
+from fastapi import FastAPI
 from fastapi_utilities import repeat_every
 from starlette.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from starlette.responses import FileResponse, HTMLResponse, JSONResponse
 
-import bills_global_var
-import files_attributes_global_var
-import global_test
-import models
+import global_var
+from global_vars import bills_global_var, files_attributes_global_var
 import print_queue
 from routers import user, printer
 from routers import pay
-import jwt
-from convert import convert_docs
-import global_var
+import global_vars
 from files_dump import dump_queue_files, dump_save_files, startup
-import time
 
 app = FastAPI()
 app.include_router(user.router)
@@ -35,13 +26,11 @@ app.add_middleware(
 )
 global_var.init()  # init in main function
 print_queue.init()
-global_var.global_var_setter(1234, "sdsadasdasd")
-global_var.global_var_setter("printer_status", "running")
 
-global_test.init()
+
 bills_global_var.init()
 files_attributes_global_var.init()
-files_attributes_global_var.setter(1234,"asdasda")
+files_attributes_global_var.setter(1234, "asdasda")
 
 
 
@@ -54,7 +43,7 @@ async def root():
 
 @app.get("/status")
 async def status():
-    return {"message": global_var.global_var_getter("status")}
+    return {"message": global_vars.global_var_getter("status")}
 
 
 @app.get("/hello/{name}")

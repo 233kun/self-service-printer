@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, onUnmounted, reactive, ref} from "vue";
+import {onMounted, onUnmounted, reactive, ref, watch, defineExpose} from "vue";
 // import config from "@/assets/config.js";
 import config from "@/assets/config.js";
 import axios from "axios";
@@ -8,7 +8,6 @@ import {ElMessage, ElNotification} from 'element-plus'
 import PayButton from "@/components/PayButton.vue";
 import PriceCounter from "@/components/PriceCounter.vue";
 import {IconFiles, IconPhoto, IconBook, IconBrandAndroid} from '@tabler/icons-vue';
-
 async function getToken() {
   let token = ref()
   await axios.get(config.baseURL + "/token/generation").then(
@@ -19,7 +18,6 @@ async function getToken() {
   )
   return token
 }
-
 const renewToken = async (oldToken) => {
   let token
   await axios.post(config.baseURL + "/token/renew", {
@@ -47,19 +45,18 @@ const checkToken = () => {
     )
   }
 }
-
 const getFilesAttributes = async (token) => {
+  console.log(1)
   let files_attributes
   await axios.get(config.baseURL + "/uploadfile/filelist", {
     headers: {
       "Authentication": token
     }
   }).then(res => {
-    files_attributes = res.data.data.files_attributes
+      files_attributes = res.data.data.files_attributes
   })
     return files_attributes
 }
-
 const lPollConvertStatus = async (token) => { //long polling
   let message
   await axios.get(config.baseURL + '/uploadfile/convert_status', {
@@ -72,7 +69,6 @@ const lPollConvertStatus = async (token) => { //long polling
   return message
 }
 const fileList = reactive([])
-const isShowPayArea = ref(false)
 const setFileList = async (token) => {
   await getFilesAttributes(token).then(res => {
     fileList.value = res
@@ -87,91 +83,34 @@ const setFileList = async (token) => {
     }
   }
 }
-// const getFileList = (token) => {
-//   axios.get(config.baseURL + "/uploadfile/filelist", {
-//     headers: {
-//       "Authentication": token
-//     }
-//   }).then(res => {
-//         fileList.value = res.data.data.files_attributes
-//         for (let item in fileList) {
-//           if (item.convert_state === 'pending' || item.convert_state === 'pending') {
-//             axios.get(config.baseURL + '/uploadfile/convert_status', {
-//               headers: {
-//                 'Authentication': token,
-//               }
-//             }).then(res => {
-//               getFileList(token)
-//             })
-//           }
-//         }
-//       }
-//   )
-// }
-
-
-// const getFileList = (token) => {
-//   let isConvertFinished = true
-//   axios.get(config.baseURL + "/uploadfile/filelist", {
-//     headers: {
-//       "Authentication": token
-//     }
-//   }).then(res => {
-//     console.log(res.data)
-//     if (res.data.message === "fail") {
-//       return
-//     }
-//     fileList.value = res.data.data.files_attributes
-//     for (let item in res.data.data) {
-//       if (item.convert_stata === "processing") {
-//         isConvertFinished = false
-//         break
-//       }
-//       if (item.convert_stata === "error") {
-//         isConvertFinished = false
-//       }
-//     }
-//     if (isConvertFinished === true) {
-//       if (JSON.stringify(res.data.data) !== "{}") {
-//         isShowPayArea.value = true;
-//       }
-//     }
-//     return "none"
-//   }).catch(
-//       error => {
-//         console.log(error)
-//         ElMessage.error("初始化失败：error code 3")
-//       }
-//   )
-//   return null
-// }
-
 const chooseFile = () => {
-  inputFile.click()
+  inputFiles.click()
 }
 const chooseImage = () => {
-  inputImage.click()
+  inputImages.click()
 }
-let inputImage = reactive()
-let inputFile = reactive()
+let inputImages = reactive()
+let inputFiles = reactive()
 const handleFormFilesInput = () => { //handleFileUpload
-  const uploadFile = new FormData()
-  for (let length = inputFile.files.length, i = 0; i < length; i++) {
-    uploadFile.append("files", inputFile.files[i])
+  let uploadFiles = new FormData()
+  for (let length = inputFiles.files.length, i = 0; i < length; i++) {
+    uploadFiles.append("files", inputFiles.files[i])
     fileList.value.push({
-      "filename": inputFile.files[i].name,
+      "filename": inputFiles.files[i].name,
       "convert_state": "processing",
+      "total_pages": '1'
     })
   }
-  for (let length = inputImage.files.length, i = 0; i < length; i++) {
-    uploadFile.append("files", inputImage.files[i])
+  for (let length = inputImages.files.length, i = 0; i < length; i++) {
+    uploadFiles.append("files", inputImages.files[i])
     fileList.value.push({
-      "filename": inputImage.files[i].name,
+      "filename": inputImages.files[i].name,
       "convert_state": "processing",
+      "total_pages": '1'
     })
   }
-  console.log(uploadFile)
-  axios.put(config.baseURL + "/uploadfile", uploadFile, {
+  console.log(uploadFiles)
+  axios.put(config.baseURL + "/uploadfile", uploadFiles, {
     headers: {
       'Accept': 'application/json',
       'Content-Type': "multipart/form-data",
@@ -179,6 +118,9 @@ const handleFormFilesInput = () => { //handleFileUpload
     }
   }).then(
       res => {
+        console.log(inputImages)
+        inputImages.value = ''
+        inputFiles.value = ''
         setFileList(window.localStorage.getItem("token"))
       }
   ).then((error) => {
@@ -194,14 +136,24 @@ onMounted(async () => {
     console.log(res)
   })
   document.title = "30栋304打印店"
-  inputFile = reactive(
-      document.getElementById("input-file")
+  inputFiles = reactive(
+      document.getElementById("input-files")
   )
-  inputImage = reactive(
+  inputImages = reactive(
       document.getElementById("input-image")
   )
   checkToken()
 })
+const isShowPayArea = ref(false)
+watch(() => fileList.value,  () => {
+  for (let file of fileList.value) {
+    if (file.convert_state === 'processing' || file.convert_state === 'pending') {
+      break
+    } else {
+      isShowPayArea.value = true
+    }
+  }
+}, {deep: true})
 </script>
 
 <template>
@@ -210,7 +162,7 @@ onMounted(async () => {
       {{ fileList.value }}
       <div class="uploader-wrapper">
         <n-button type="primary" class="upload-button" @click="chooseFile()">
-          <input type="file" multiple id="input-file" accept=".doc, .docx, .xlsx, .xls, .pdf" v-show="false"
+          <input type="file" multiple id="input-files" accept=".doc, .docx, .xlsx, .xls, .pdf" v-show="false"
                  @change="handleFormFilesInput">
           <div class="button-image-and-font">:
             <IconFiles/>
