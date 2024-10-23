@@ -41,28 +41,6 @@ async def root():
     # return JSONResponse(status_code=503, content={"message": "Item not found"})
 
 
-@app.get("/status")
-async def status():
-    return {"message": global_vars.global_var_getter("status")}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
-
-
-# @app.post("/uploadfile")
-# async def create_upload_file(file: UploadFile, request: Request):
-#     with open(f'save_files//{file.filename}', "wb") as f:
-#         f.write(file.file.read())
-#     print(request.headers.get("token"))
-#     return {"filename": file.filename}
-async def print_hello():
-    print("hello")
-    await asyncio.sleep(5)
-    print("world")
-
-
 async def dump_files_loop():
     dump_save_files()
     dump_queue_files()
