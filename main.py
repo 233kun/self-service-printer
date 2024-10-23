@@ -6,6 +6,7 @@ from fastapi_utilities import repeat_every
 from starlette.middleware.cors import CORSMiddleware
 
 import global_var
+import setting
 from global_vars import bills_global_var, files_attributes_global_var
 import print_queue
 from routers import user, printer
@@ -19,7 +20,7 @@ app.include_router(pay.router)
 app.include_router(printer.router)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=setting.origin,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
