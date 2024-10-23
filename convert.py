@@ -32,8 +32,8 @@ def convert_docs(directory, filename):
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'success'
-
-                reader = PdfReader(f"save_files/{directory}/converted/{file_attributes.filename.rsplit(".", 1)[0]}.pdf")
+                converted_filename = file_attributes.filename.rsplit(".", 1)[0] + '.pdf'
+                reader = PdfReader(f"save_files/{directory}/converted/{converted_filename}")
                 file_attributes.total_pages = len(reader.pages)
                 file_attributes.print_range_end = len(reader.pages)
 
@@ -76,8 +76,8 @@ def convert_excel(directory, filename):
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'success'
-
-                reader = PdfReader(f"save_files/{directory}/converted/{file_attributes.filename.rsplit(".", 1)[0]}.pdf")
+                converted_filename = file_attributes.filename.rsplit(".", 1)[0] + '.pdf'
+                reader = PdfReader(f"save_files/{directory}/converted/{converted_filename}")
                 file_attributes.total_pages = len(reader.pages)
                 file_attributes.print_range_end = len(reader.pages)
 
@@ -112,9 +112,9 @@ def convert_images(directory, filename):
             for file_attributes in files_attributes:
                 if file_attributes.filename == filename:
                     file_attributes.convert_state = 'success'
-
+                    converted_filename = file_attributes.filename.rsplit(".", 1)[0] + '.pdf'
                     reader = PdfReader(
-                        f"save_files/{directory}/converted/{file_attributes.filename.rsplit(".", 1)[0]}.pdf")
+                        f"save_files/{directory}/converted/{converted_filename}")
                     file_attributes.total_pages = len(reader.pages)
                     file_attributes.print_range_end = len(reader.pages)
     except Exception as e:
@@ -132,11 +132,11 @@ def convert_pdf(directory, filename):
     try:
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
-                print(filename)
                 copyfile(f'save_files/{directory}/raw/{filename}',
                          f'save_files/{directory}/converted/{filename}')
+                converted_filename = file_attributes.filename.rsplit(".", 1)[0] + '.pdf'
                 reader = PdfReader(
-                    f"save_files/{directory}/converted/{file_attributes.filename.rsplit(".", 1)[0]}.pdf")
+                    f"save_files/{directory}/converted/{converted_filename}")
                 file_attributes.total_pages = len(reader.pages)
                 file_attributes.print_range_end = len(reader.pages)
                 file_attributes.convert_state = 'success'

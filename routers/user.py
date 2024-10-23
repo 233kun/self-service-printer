@@ -44,7 +44,6 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         mkdir(f"save_files/{directory}")
         mkdir(f"save_files/{directory}/raw")
         mkdir(f"save_files/{directory}/converted")
-    # files_attributes_expiry_global_var.setter(directory, int(time.time()) + 60 * 15)
 
     for index in range(len(files)):
         print(files)
@@ -88,12 +87,6 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         directory = payload.get("token")
         expire = payload.get("exp")
 
-        # if os.path.exists("save_files/" + directory):
-        # files_attributes_expiry_global_var.setter(directory, int(time.time()) + 60 * 15)
-        # try:
-        #     return_data = files_attributes_global_var.getter(directory)
-        # except BaseException as e:
-        #     print(e.__class__.__name__)
         try:
             return ReturnResult(200, "success", {'files_attributes': files_attributes_global_var.getter(directory)})
         except KeyError as e:
@@ -139,16 +132,11 @@ async def remove_file(remove_filename: RemoveFilename, Authentication: Annotated
         directory = payload.get("token")
         converted_filename = remove_filename.filename.rsplit(".", 1)[0] + ".pdf"
 
-        # if os.path.exists("save_files/" + directory):
-        #     files_attributes_expiry_global_var.setter(directory, int(time.time()) + 60 * 15)
         files_attributes = files_attributes_global_var.getter(directory)
         for file_attributes in files_attributes:
             if file_attributes.filename == remove_filename.filename:
                 files_attributes.remove(file_attributes)
         files_attributes_global_var.setter(directory, files_attributes)
-
-        # os.remove(f"save_files/{directory}/raw/{remove_filename.filename}")
-        # os.remove(f"save_files/{directory}/converted/{converted_filename}")
 
         return ReturnResult(200, "success", {})
 

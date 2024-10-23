@@ -66,7 +66,7 @@ def create_bill(request_body: FileList, Authentication: Annotated[str | None, He
     # 别看了，已失效
     alipay_client_config.app_id = setting.app_id
     alipay_client_config.app_private_key = setting.alipay_private_key
-    alipay_client_config.alipay_public_key = setting.alipay_private_key
+    alipay_client_config.alipay_public_key = setting.alipay_public_key
     client = DefaultAlipayClient(alipay_client_config, logger)
 
     model = AlipayTradeCreateModel()
@@ -85,12 +85,9 @@ def create_bill(request_body: FileList, Authentication: Annotated[str | None, He
     if not response_content:
         print("failed execute")
     else:
-        # 解析响应结果
         response = AlipayTradeCreateResponse()
         string = response.parse_response_content(response_content)
-        # 响应成功的业务处理
         if response.is_success():
-            # 如果业务成功，可以通过response属性获取需要的值
             result_code = response.code
             if not result_code:
                 result_code = 0
@@ -100,7 +97,6 @@ def create_bill(request_body: FileList, Authentication: Annotated[str | None, He
                 print("失败")
             return {"message": "https://qr.alipay.com/" + eval(response.body)['qr_code'].split("/")[-1]}
         else:
-            # 如果业务失败，可以从错误码中可以得知错误情况，具体错误码信息可以查看接口文档
             print(
                 f"{response.code}, {response.msg}, {response.sub_code}, {response.sub_msg}"
             )
@@ -117,8 +113,8 @@ def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotated[str
     files_attributes = bill_attributes.get('files_attributes')
     for file_attributes in files_attributes:
         folder = bill_attributes.get('folder')
-        filename = file_attributes.get('filename')
-        os.replace(f'save_files/{folder}/{filename}', f"print_queue/{folder}/{filename}")
+        converted_filename = file_attributes.get('filename').rsplit(".", 1)[0] + '.pdf'
+        os.mkdir(f'print_queue/{folder}')
+        os.replace(f'save_files/{folder}/converted/{converted_filename}', f"print_queue/{folder}/{converted_filename}")
     queue_push(bill_attributes)
     return HTMLResponse(content="success", status_code=200)
-

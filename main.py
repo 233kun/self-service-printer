@@ -31,10 +31,6 @@ print_queue.init()
 
 bills_global_var.init()
 files_attributes_global_var.init()
-files_attributes_global_var.setter(1234, "asdasda")
-
-
-
 
 @app.get("/")
 async def root():

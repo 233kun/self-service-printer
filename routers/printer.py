@@ -12,10 +12,10 @@ router = APIRouter()
 @router.get("/printer/get_job")
 def printer_get_job():
     if get_queue_size() == 0:
-        return ReturnResult(200, "success", {'queue_state': 'queue is empty'})
+        return ReturnResult(200, "success", {'jobs': []})
     if get_queue_size() > 0:
         bill_attributes = get_job(0)
-        return ReturnResult(200, "success", {'queue_state': 'queue is not empty', 'jobs': bill_attributes.get('files_attributes')})
+        return ReturnResult(200, "success", {'jobs': bill_attributes.get('files_attributes')})
 
 
 @router.get("/printer/get_file")
