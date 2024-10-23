@@ -1,4 +1,5 @@
 import os
+from shutil import copyfile
 
 import img2pdf
 import pythoncom
@@ -131,6 +132,9 @@ def convert_pdf(directory, filename):
     try:
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
+                print(filename)
+                copyfile(f'save_files/{directory}/raw/{filename}',
+                         f'save_files/{directory}/converted/{filename}')
                 reader = PdfReader(
                     f"save_files/{directory}/converted/{file_attributes.filename.rsplit(".", 1)[0]}.pdf")
                 file_attributes.total_pages = len(reader.pages)
@@ -143,5 +147,4 @@ def convert_pdf(directory, filename):
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'error'
         files_attributes_global_var.setter(directory, files_attributes)
-        raise Exception(e)
-
+        print(e)

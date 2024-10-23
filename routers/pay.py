@@ -109,12 +109,12 @@ def create_bill(request_body: FileList, Authentication: Annotated[str | None, He
 def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotated[str, Form()]):
     if not trade_status == 'TRADE_SUCCESS':
         return {"message": "error"}
-    if global_var_isKey_exist:
-        return HTMLResponse(content="success", status_code=200)
+    # if global_var_isKey_exist:
+    #     return HTMLResponse(content="success", status_code=200)
     bill_attributes = bills_global_var.getter(out_trade_no)
     files_attributes = bill_attributes.get('files_attributes')
     for file_attributes in files_attributes:
-        folder = file_attributes.get('folder')
+        folder = bill_attributes.get('folder')
         filename = file_attributes.get('filename')
         os.replace(f'save_files/{folder}/{filename}', f"print_queue/{folder}/{filename}")
     queue_push(bill_attributes)

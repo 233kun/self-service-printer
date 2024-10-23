@@ -14,9 +14,12 @@ import config from "@/assets/config.js";
 import {useMessage} from 'naive-ui'
 import {ElMessage} from 'element-plus'
 import {onBeforeMount, onBeforeUnmount, onMounted, onUnmounted, onUpdated, reactive, ref, toRef, watch} from "vue";
-import home from '../pages/Home.vue'
-  const props = defineProps({
+import getFilesAttributes from '../pages/Home.vue'
+const props = defineProps({
   fileList: {
+    type: Object
+  },
+  getFilesAttributes: {
     type: Object
   }
 })
@@ -57,7 +60,11 @@ const removeFile = (filename, index) => {
     }
   }).then(res => {
     if (res.data.message === "success") {
-      home.getFilesAttributes(window.localStorage.getItem("token"))
+      console.log(props.getFilesAttributes(window.localStorage.getItem("token")))
+      props.getFilesAttributes(window.localStorage.getItem("token")).then(res => {
+        props.fileList.value = res
+      })
+      props.fileList.value = []
     }
   }).catch(error => {
         ElMessage.error("删除失败")
@@ -74,16 +81,18 @@ const handleConvertState = (state) => {
   return true
 }
 const preview = (filename) => {
-
-        console.log(props.fileList)
+        console.log(fileList)
   // window.open('https://print.233kun.top/preview/' + `filename=${filename}&Authentication=${window.localStorage.getItem("token")}`)
 }
+watch()
 </script>
 
 <template>
   <div class="filelist">
+    <button @click="test()"></button>
+    {{fileList.value}}
     <TransitionGroup name="list" tag="ul" class="upload-file-list">
-      <li v-for="(item, index) in props.fileList" :key="item">
+      <li v-for="(item, index) in props.fileList.value" :key="item">
         <!--        <div class="loading" v-loading="item.convert_stata==='success'?false:item.convert_stata==='error'?false:true">-->
         <div class="wrapper">
           <div class="upload-file-info">
@@ -110,7 +119,7 @@ const preview = (filename) => {
                   <a>{{ item.filename }}</a>
                 </div>
               </div>
-              <IconBackspace class="icon" @click="removeFile(item.filename, index)"></IconBackspace>
+              <IconBackspace class="icon" @click="removeFile(item.filename)"></IconBackspace>
             </div>
           </div>
           <div class="print-info" :style="item.convert_state==='success'?'display: unset':'display: none'">

@@ -10,7 +10,7 @@ from starlette.responses import FileResponse
 
 from global_vars import files_attributes_global_var, files_attributes_expiry_global_var
 from global_var import global_var_setter
-from convert import convert_docs, convert_images, convert_excel
+from convert import convert_docs, convert_images, convert_excel, convert_pdf
 from models import FileModel, ReturnResult, RemoveFilename
 import jwt
 
@@ -61,15 +61,17 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
 
         try:
             files_attributes = files_attributes_global_var.getter(directory)
-            files_attributes.append(file_attributes)
-            files_attributes_global_var.setter(directory, files_attributes)
+            for file_attributes in files_attributes:
+                if file_attributes.filename != files[index].filename:
+                    files_attributes.append(file_attributes)
+                    files_attributes_global_var.setter(directory, files_attributes)
         except Exception as e:
             files_attributes = [file_attributes]
             files_attributes_global_var.setter(directory, files_attributes)
 
         filetype = files[index].filename.rsplit(".", 1)[1]
         if filetype == "pdf":
-            file_attributes.convert_state = "success"
+            background_tasks.add_task(convert_pdf, directory, files[index].filename)
         if filetype == "doc" or filetype == "docx":
             background_tasks.add_task(convert_docs, directory, files[index].filename)
         if filetype == "xlsx" or filetype == "xls":

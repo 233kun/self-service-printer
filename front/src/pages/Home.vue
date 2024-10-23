@@ -69,6 +69,7 @@ const lPollConvertStatus = async (token) => { //long polling
   return message
 }
 const fileList = reactive([])
+// const test = ref('[ { "print_copies": 1, "print_range_start": 1, "print_side": "one-sided", "filename": "实验二 盒子模型的应用.pdf", "convert_state": "success", "print_range_end": 1 }, { "print_copies": 1, "print_range_start": 1, "print_side": "one-sided", "filename": "实验二 盒子模型的应用.pdf", "convert_state": "success", "print_range_end": 1 }, { "print_copies": 1, "print_range_start": 1, "print_side": "one-sided", "filename": "实验二 盒子模型的应用.pdf", "convert_state": "success", "print_range_end": 1 }, { "print_copies": 1, "print_range_start": 1, "print_side": "one-sided", "filename": "实验二 盒子模型的应用.pdf", "convert_state": "success", "print_range_end": 1 } ] ')
 const setFileList = async (token) => {
   await getFilesAttributes(token).then(res => {
     fileList.value = res
@@ -190,7 +191,7 @@ watch(() => fileList.value,  () => {
         </n-button>
       </div>
       <div class="filelist-wrapper">
-        <FileList :fileList="fileList.value" class="field-list"></FileList>
+        <FileList :fileList="fileList" :getFilesAttributes="getFilesAttributes" class="field-list"></FileList>
       </div>
     </div>
     <div v-if="isShowPayArea" class="pay-area">
