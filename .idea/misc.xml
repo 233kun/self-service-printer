@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Black">
+    <option name="sdkName" value="Python 3.12 (self-service-printer)" />
+  </component>
+  <component name="JavaScriptSettings">
+    <option name="languageLevel" value="FLOW" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (self-service-printer)" project-jdk-type="Python SDK" />
+</project>
