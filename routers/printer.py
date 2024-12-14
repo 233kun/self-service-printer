@@ -1,5 +1,6 @@
 import json
 import os
+from cgi import nolog
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -11,7 +12,6 @@ from print_queue import get_job, get_queue_size, queue_pop
 from setting import SECRET_KEY
 
 router = APIRouter()
-
 
 @router.get("/printer/jobs")
 def printer_get_job():

@@ -1,3 +1,5 @@
+import logging
+
 from pydantic import BaseModel
 
 
@@ -76,3 +78,10 @@ class GlobalVar:
 
     def free(self, key):
         del self._global_dict[key]
+
+
+class GetJobsAccessLogFilter(logging.Filter):
+    def filter(self, record):
+        if record.args[2] == '/printer/jobs':
+            return False
+        return True

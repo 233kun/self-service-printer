@@ -10,6 +10,7 @@ import global_var
 import setting
 from global_vars import bills_global_var, files_attributes_global_var, expire_global_var
 import print_queue
+from models import GetJobsAccessLogFilter
 from routers import user, printer
 from routers import pay
 from automatic_tasks import startup, clear_expired_directories, clear_expired_bills
@@ -47,6 +48,7 @@ bills_global_var.init()
 expire_global_var.init()
 files_attributes_global_var.init()
 
+logging.getLogger("uvicorn.access").addFilter(GetJobsAccessLogFilter())
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
