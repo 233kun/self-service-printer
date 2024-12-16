@@ -2,6 +2,8 @@ import asyncio
 import json
 import os
 from datetime import datetime, time
+from time import sleep
+
 from global_vars import expire_global_var, files_attributes_global_var
 from global_vars import bills_global_var
 
@@ -25,18 +27,15 @@ def clear_expired_directories():
     directories = os.listdir("uploads")
     for directory in directories:
         if expire_global_var.getter(directory) < datetime.now().timestamp():
-            try:
-                files_attributes_global_var.free(directory)
-            except Exception as e:
-                pass
-            expire_global_var.free(directory)
-
             for root, dirs, files in os.walk(f"uploads/{directory}", topdown=False):
                 for name in files:
                     os.remove(os.path.join(root, name))
                 for name in dirs:
                     os.rmdir(os.path.join(root, name))
-            os.rmdir(f"uploads/{directory}")
+            os.rmdir(f'uploads/{directory}')
+            files_attributes_global_var.free(directory)
+            expire_global_var.free(directory)
+
 
 
 def clear_expired_bills():
