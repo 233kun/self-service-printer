@@ -47,13 +47,3 @@ def update_job_status(update_state: UpdateState):
             os.rmdir(f'pending_files/{folder}')
         break
     return ReturnResult(200, "success", {})
-    #         return {"message": "success"}
-    # return {"message": "fail"}
-
-    # queue_size = get_queue_size()
-    # for index in range(queue_size):
-    #     if get_job(index).get('out_trade_no') == update_job.file:
-    #         if get_job(index).get('files_attributes').get('filename') == update_job.out_trade_no:
-    #             queue_pop(index)
-    #             return {"message": "success"}
-    # return {"message": "fail"}
