@@ -111,7 +111,6 @@ async def get_convert_status(Authentication: Annotated[str | None, Header()]):
     if jwt.verify_token(Authentication):
         payload = jwt.decode_token(Authentication)
         directory = payload.get("token")
-
         files_attributes = files_attributes_global_var.getter(directory)
 
         converting_filenames = []
@@ -131,6 +130,8 @@ async def get_convert_status(Authentication: Annotated[str | None, Header()]):
                 for converting_filename in converting_filenames:
                     if file_attributes.filename == converting_filename:
                         if file_attributes.convert_state == "success":
+                            return ReturnResult(200, "success", {})
+                        if file_attributes.convert_state == 'error':
                             return ReturnResult(200, "success", {})
     return ReturnResult(200, "success", {})
 
