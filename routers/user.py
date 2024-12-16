@@ -69,6 +69,7 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         except Exception as e:
             files_attributes = [file_attributes]
             files_attributes_global_var.setter(directory,  files_attributes)
+            expire_global_var.setter(directory, datetime.now().timestamp() + 60 * 15)
 
         filetype = files[index].filename.rsplit(".", 1)[1]
         if filetype == "pdf":
@@ -97,6 +98,7 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         expire = payload.get("exp")
 
         try:
+             expire_global_var.setter(directory, datetime.now().timestamp() + 60 * 15)
              return ReturnResult(200, "success", {'files_attributes': files_attributes_global_var.getter(directory), 'token': renewed_token})
         except KeyError as e:
             return ReturnResult(200, "success", {'files_attributes': [], 'token': renewed_token})
