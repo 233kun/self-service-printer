@@ -1,5 +1,5 @@
 ORIGIN = [
-    ''
+    '*'
 ]  # 跨域设置
 SECRET_KEY = ''  # 加密密码，请一定要使用强密码
 ALGORITHM = 'HS256'  # JWT加密算法，没特殊需求不用改

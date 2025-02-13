@@ -1,9 +1,7 @@
-import os.path
-import time
+import os
 from asyncio import sleep
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from os import mkdir
-from shutil import copyfile
 from typing import Annotated
 from fastapi import APIRouter, UploadFile, Header, BackgroundTasks
 from pydantic import BaseModel
@@ -12,6 +10,7 @@ from starlette.responses import FileResponse
 from global_vars import files_attributes_global_var, expire_global_var
 from global_var import global_var_setter
 from convert import convert_docs, convert_images, convert_excel, convert_pdf
+from global_vars.files_attributes import files_attributes_singleton
 from models import FileModel, ReturnResult, RemoveFilename, JwtToken
 import jwt
 
@@ -22,11 +21,9 @@ router = APIRouter()
 # @router.get("/token/generation")
 # async def get_token():
 #     token = jwt.create_token()
-#     expire_global_var.renew_expire(token)
 #     return ReturnResult(200, "success", {"token": token})
 #
 #
-# @router.post("/token/renew")
 # async def renew_token(jwt_token: JwtToken):
 #     expire_global_var.renew_expire(jwt_token.token)
 #     return ReturnResult(200, "success", {"token": jwt.renew_token(jwt_token.token.__str__())})
@@ -58,18 +55,23 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         file_attributes.print_range_end = 1
         file_attributes.print_side = "one-sided"
 
-        try:
-            files_attributes_global = files_attributes_global_var.getter(directory)
-            for file_attributes_global in files_attributes_global:
-                if file_attributes_global.filename == files[index].filename:
-                    file_attributes_global.remove(file_attributes_global)
-            files_attributes_global.append(file_attributes)
-            files_attributes_global_var.setter(directory,  files_attributes_global)
-
-        except Exception as e:
-            files_attributes = [file_attributes]
-            files_attributes_global_var.setter(directory,  files_attributes)
-            expire_global_var.setter(directory, datetime.now().timestamp() + 60 * 15)
+        files_attributes_global = files_attributes_singleton()
+        files_attributes = []
+        if directory in files_attributes_global.data:
+            files_attributes = files_attributes_global.data.get(directory)
+            for file_attribute in files_attributes:
+                if file_attribute.filename == files[index].filename:
+                    files_attributes.remove(file_attribute)
+        files_attributes.append(file_attributes)
+        files_attributes_global.data.update({directory: files_attributes})
+        # try:
+        #     files_attributes_global = files_attributes_global_var.getter(directory)
+        #     for file_attributes_global in files_attributes_global:
+        #         if file_attributes_global.filename == files[index].filename:
+        #             file_attributes_global.remove(file_attributes_global)
+        #     files_attributes_global.append(file_attributes)
+        #     files_attributes_global_var.setter(directory,  files_attributes_global)
+        expire_global_var.setter(directory, datetime.now().timestamp() + 60 * 15)
 
         filetype = files[index].filename.rsplit(".", 1)[1]
         if filetype == "pdf":
@@ -97,13 +99,14 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         directory = payload.get("token")
         expire = payload.get("exp")
 
-        try:
-             expire_global_var.setter(directory, datetime.now().timestamp() + 60 * 15)
-             return ReturnResult(200, "success", {'files_attributes': files_attributes_global_var.getter(directory), 'token': renewed_token})
-        except KeyError as e:
-            return ReturnResult(200, "success", {'files_attributes': [], 'token': renewed_token})
-        except Exception as e:
-            return ReturnResult(200, "初始化失败", {})
+        expire_global_var.setter(directory, datetime.now().timestamp() + 60 * 15)
+        files_attributes_global = files_attributes_singleton()
+        files_attributes = files_attributes_global.data
+        if directory in files_attributes:
+            return ReturnResult(200, "success",{'files_attributes': files_attributes.get(directory), 'token': renewed_token})
+        return ReturnResult(200, "success", {'files_attributes': [], 'token': renewed_token})
+        # except Exception as e:
+        #     return ReturnResult(200, "初始化失败", {})
 
 
 @router.get("/uploadfile/convert_status")
@@ -111,8 +114,10 @@ async def get_convert_status(Authentication: Annotated[str | None, Header()]):
     if jwt.verify_token(Authentication):
         payload = jwt.decode_token(Authentication)
         directory = payload.get("token")
-        files_attributes = files_attributes_global_var.getter(directory)
+        files_attributes_global = files_attributes_singleton()
+        files_attributes = files_attributes_global.data.get(directory)
 
+        print(files_attributes)
         converting_filenames = []
         for file_attributes in files_attributes:
             if file_attributes.convert_state == "processing":
@@ -120,12 +125,12 @@ async def get_convert_status(Authentication: Annotated[str | None, Header()]):
         if len(converting_filenames) == 0:
             return ReturnResult(200, "success", {})  # if no processing files, return success
 
-        start_unix_timestamp = time.time()
+        start_unix_timestamp = datetime.now().timestamp()
         while True:
             await sleep(0.01)
-            if time.time() - start_unix_timestamp > 120:
+            if datetime.now().timestamp() - start_unix_timestamp > 120:
                 return ReturnResult(200, "timeout", {})
-            files_attributes = files_attributes_global_var.getter(directory)
+            files_attributes = files_attributes_global.data.get(directory)
             for file_attributes in files_attributes:
                 for converting_filename in converting_filenames:
                     if file_attributes.filename == converting_filename:
@@ -143,11 +148,13 @@ async def remove_file(remove_filename: RemoveFilename, Authentication: Annotated
         directory = payload.get("token")
         converted_filename = remove_filename.filename.rsplit(".", 1)[0] + ".pdf"
 
-        files_attributes = files_attributes_global_var.getter(directory)
+        files_attributes_global = files_attributes_singleton()
+        files_attributes = files_attributes_global.data.get(directory)
         for file_attributes in files_attributes:
             if file_attributes.filename == remove_filename.filename:
                 files_attributes.remove(file_attributes)
-        files_attributes_global_var.setter(directory, files_attributes)
+                break
+        files_attributes_global.data.update({directory: files_attributes})
         return ReturnResult(200, "success", {})
 
 

@@ -13,6 +13,7 @@ from setting import SECRET_KEY
 
 router = APIRouter()
 
+
 @router.get("/printer/jobs")
 def printer_get_job():
     if get_queue_size() == 0:

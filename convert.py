@@ -7,15 +7,19 @@ import win32com.client
 from pypdf import PdfReader
 
 from global_vars import files_attributes_global_var
+from global_vars.files_attributes import files_attributes_singleton
 
 
 def convert_docs(directory, filename):
-    files_attributes = files_attributes_global_var.getter(directory)
+    files_attributes_global = files_attributes_singleton()
+    files_attributes = files_attributes_global.data.get(directory)
+    # files_attributes = files_attributes_global_var.getter(directory)
 
     for file_attributes in files_attributes:
         if file_attributes.filename == filename:
             file_attributes.convert_state = 'processing'
-    files_attributes_global_var.setter(directory, files_attributes)
+    # files_attributes_global_var.setter(directory, files_attributes)
+    files_attributes_global.data.update({directory: files_attributes})
 
     pythoncom.CoInitialize()
     wdFormatPDF = 17
@@ -29,6 +33,7 @@ def convert_docs(directory, filename):
     try:
         doc = word.Documents.Open(input_doc)
         doc.SaveAs(output_pdf, FileFormat=wdFormatPDF)
+        files_attributes = files_attributes_global.data.get(directory)
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'success'
@@ -37,12 +42,12 @@ def convert_docs(directory, filename):
                 file_attributes.total_pages = len(reader.pages)
                 file_attributes.print_range_end = len(reader.pages)
 
-        files_attributes_global_var.setter(directory, files_attributes)
+        files_attributes_global.data.update({directory: files_attributes})
     except Exception as e:
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'error'
-        files_attributes_global_var.setter(directory, files_attributes)
+        files_attributes_global.data.update({directory: files_attributes})
         raise Exception(e)
     finally:
         doc.Close()
@@ -51,12 +56,13 @@ def convert_docs(directory, filename):
 
 
 def convert_excel(directory, filename):
-    files_attributes = files_attributes_global_var.getter(directory)
+    files_attributes_global = files_attributes_singleton()
+    files_attributes = files_attributes_global.data.get(directory)
 
     for file_attributes in files_attributes:
         if file_attributes.filename == filename:
             file_attributes.convert_state = 'processing'
-    files_attributes_global_var.setter(directory, files_attributes)
+    files_attributes_global.data.update({directory: files_attributes})
 
     pythoncom.CoInitialize()
     excel = win32com.client.DispatchEx("Excel.Application")
@@ -73,6 +79,7 @@ def convert_excel(directory, filename):
         sheets = excel.Workbooks.Open(input_excel, False)
         sheets.ExportAsFixedFormat(0, output_pdf)
 
+        files_attributes = files_attributes_global.data.get(directory)
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'success'
@@ -81,12 +88,12 @@ def convert_excel(directory, filename):
                 file_attributes.total_pages = len(reader.pages)
                 file_attributes.print_range_end = len(reader.pages)
 
-        files_attributes_global_var.setter(directory, files_attributes)
+        files_attributes_global.data.update({directory: files_attributes})
     except Exception as e:
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'error'
-        files_attributes_global_var.setter(directory, files_attributes)
+        files_attributes_global.data.update({directory: files_attributes})
         raise Exception(e)
     finally:
         sheets.Close()
@@ -95,12 +102,13 @@ def convert_excel(directory, filename):
 
 
 def convert_images(directory, filename):
-    files_attributes = files_attributes_global_var.getter(directory)
+    files_attributes_global = files_attributes_singleton()
+    files_attributes = files_attributes_global.data.get(directory)
 
     for file_attributes in files_attributes:
         if file_attributes.filename == filename:
             file_attributes.convert_state = 'processing'
-    files_attributes_global_var.setter(directory, files_attributes)
+    files_attributes_global.data.update({directory: files_attributes})
 
     a4inpt = (img2pdf.mm_to_pt(210), img2pdf.mm_to_pt(297))
     layout_fun = img2pdf.get_layout_fun(a4inpt)
@@ -109,6 +117,7 @@ def convert_images(directory, filename):
         with open(f"uploads/{directory}/converted/{output_filename}.pdf", "wb") as f:
             f.write(img2pdf.convert(f"uploads/{directory}/raw/{filename}", layout_fun=layout_fun))
 
+            files_attributes = files_attributes_global.data.get(directory)
             for file_attributes in files_attributes:
                 if file_attributes.filename == filename:
                     file_attributes.convert_state = 'success'
@@ -117,17 +126,21 @@ def convert_images(directory, filename):
                         f"uploads/{directory}/converted/{converted_filename}")
                     file_attributes.total_pages = len(reader.pages)
                     file_attributes.print_range_end = len(reader.pages)
+            files_attributes_global.data.update({directory: files_attributes})
+
     except Exception as e:
+        # error handling here
         raise Exception(e)
 
 
 def convert_pdf(directory, filename):
-    files_attributes = files_attributes_global_var.getter(directory)
-    print(files_attributes)
+    files_attributes_global = files_attributes_singleton()
+    files_attributes = files_attributes_global.data.get(directory)
+
     for file_attributes in files_attributes:
         if file_attributes.filename == filename:
             file_attributes.convert_state = 'processing'
-    files_attributes_global_var.setter(directory, files_attributes)
+    files_attributes_global.data.update({directory: files_attributes})
 
     try:
         for file_attributes in files_attributes:
@@ -140,11 +153,9 @@ def convert_pdf(directory, filename):
                 file_attributes.total_pages = len(reader.pages)
                 file_attributes.print_range_end = len(reader.pages)
                 file_attributes.convert_state = 'success'
-
-                files_attributes_global_var.setter(directory, files_attributes)
+        files_attributes_global.data.update({directory: files_attributes})
     except BaseException as e:
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'error'
         files_attributes_global_var.setter(directory, files_attributes)
-        print(e)
