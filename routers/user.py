@@ -54,6 +54,7 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         file_attributes.print_range_start = 1
         file_attributes.print_range_end = 1
         file_attributes.print_side = "one-sided"
+        file_attributes.folder = directory
 
         files_attributes_global = files_attributes_singleton()
         files_attributes = []

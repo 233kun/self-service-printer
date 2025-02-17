@@ -21,6 +21,7 @@ from alipay.aop.api.request.AlipayTradePrecreateRequest import (
 )
 
 import jwt
+import print_queue
 from global_vars.files_attributes_singleton import files_attributes_singleton
 from setting import SERVER_HOST, APP_ID, ALIPAY_PRIVATE_KEY, ALIPAY_PUBLIC_KEY, SECRET_KEY
 from global_vars import bills_global_var, files_attributes_global_var, expire_global_var
@@ -77,10 +78,9 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
                 price = Dinero(0.15, CNY).multiply(print_page_number - 1).add(0.2).multiply(int(print_copies)).add(
                     price)
 
-        # file_attributes.update({'folder': directory}) # pending to rewrite
 
     out_trade_no = datetime.now().strftime('%Y%m%d%H%M%S%f')
-    bill_attributes = {'files_attributes': files_attributes, 'total_price': float(price.format()),
+    bill_attributes = {'files_attributes': request_body_attributes, 'total_price': float(price.format()),
                        'out_trade_no': out_trade_no, 'expiry': time.time() + 60 * 60 * 3}
 
     if directory in files_attributes_global.data:
@@ -136,9 +136,9 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
             if int(result_code) == 10000:
                 print("成功")
             else:
-                bills_attributes_global = bills_attributes_singleton()
-                bills_attributes_global.data.update({out_trade_no: bill_attributes})
                 return "https://qr.alipay.com/" + eval(response.body)['qr_code'].split("/")[-1]
+            bills_attributes_global = bills_attributes_singleton()
+            bills_attributes_global.data.update({out_trade_no: bill_attributes})
             return ReturnResult(200, 'success',
                                 {'url': "https://qr.alipay.com/" + eval(response.body)['qr_code'].split("/")[-1]})
         else:
@@ -158,12 +158,14 @@ async def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotat
     jwt_payload = jwt.decode_token(body)
     if not jwt_payload.get('out_trade_no') == out_trade_no:
         return {"message": "error"}
+
     bills_attributes_global = bills_attributes_singleton()
     if out_trade_no in bills_attributes_global.data:
         bill_attributes = bills_attributes_global.data.get(out_trade_no)
         bills_attributes_global.data.pop(out_trade_no)
     else:
         return HTMLResponse(content='success', status_code=200)
+
     files_attributes = bill_attributes.get('files_attributes')
     for file_attributes in files_attributes:
         folder = file_attributes.get('folder')
@@ -172,7 +174,7 @@ async def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotat
             os.mkdir(f'pending_files/{folder}')
         os.replace(f'uploads/{folder}/converted/{converted_filename}',
                    f"pending_files/{folder}/{converted_filename}")
-        # file_attributes.update({'folder': f'{folder}'})
-        job_attributes = file_attributes
-        queue_push(job_attributes)
+        print_queue_global = print_queue.print_queue_singleton()
+        print_queue_global.data.append(file_attributes)
+    print('success')
     return HTMLResponse(content='success', status_code=200)

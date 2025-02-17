@@ -10,7 +10,6 @@ SERVER_HOST = '47.106.100.54:8000'
 PRINTER_URL = 'http://192.168.123.138:631/printers/HP_LaserJet_P2015_Series'
 SECRET_KEY = '123456789'
 PRINTING_TIMEOUT_PRE_PAGE = 10
-pr
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
 logging.basicConfig(level=logging.INFO, format=log_format)
 logger = logging.getLogger()
@@ -25,7 +24,7 @@ def polling_jobs(interval):
         connection.close()
 
         response_dict = json.loads(response_body)
-        if response_dict.get('data').get('jobs') == {}:
+        if response_dict.get('data').get('jobs') is None:
             continue
         logging.info(f'Received response from server: Response = {response_body}')
 
