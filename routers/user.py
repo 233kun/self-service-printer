@@ -10,7 +10,7 @@ from starlette.responses import FileResponse
 from global_vars import files_attributes_global_var, expire_global_var
 from global_var import global_var_setter
 from convert import convert_docs, convert_images, convert_excel, convert_pdf
-from global_vars.files_attributes import files_attributes_singleton
+from global_vars.files_attributes_singleton import files_attributes_singleton
 from models import FileModel, ReturnResult, RemoveFilename, JwtToken
 import jwt
 
@@ -102,6 +102,7 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         expire_global_var.setter(directory, datetime.now().timestamp() + 60 * 15)
         files_attributes_global = files_attributes_singleton()
         files_attributes = files_attributes_global.data
+        print(files_attributes.get(directory))
         if directory in files_attributes:
             return ReturnResult(200, "success",{'files_attributes': files_attributes.get(directory), 'token': renewed_token})
         return ReturnResult(200, "success", {'files_attributes': [], 'token': renewed_token})

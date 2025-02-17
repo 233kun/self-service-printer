@@ -7,7 +7,7 @@ import win32com.client
 from pypdf import PdfReader
 
 from global_vars import files_attributes_global_var
-from global_vars.files_attributes import files_attributes_singleton
+from global_vars.files_attributes_singleton import files_attributes_singleton
 
 
 def convert_docs(directory, filename):

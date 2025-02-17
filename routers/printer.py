@@ -1,6 +1,5 @@
 import json
 import os
-from cgi import nolog
 
 from fastapi import APIRouter
 from pydantic import BaseModel

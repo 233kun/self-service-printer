@@ -21,12 +21,14 @@ from alipay.aop.api.request.AlipayTradePrecreateRequest import (
 )
 
 import jwt
+from global_vars.files_attributes_singleton import files_attributes_singleton
 from setting import SERVER_HOST, APP_ID, ALIPAY_PRIVATE_KEY, ALIPAY_PUBLIC_KEY, SECRET_KEY
 from global_vars import bills_global_var, files_attributes_global_var, expire_global_var
 from global_var import global_var_isKey_exist
 from models import FileList, ReturnResult
 from print_queue import queue_push
 from fastapi import FastAPI, Request
+from global_vars.bills_attributes_singleton import bills_attributes_singleton
 
 router = APIRouter()
 
@@ -36,10 +38,12 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
     payload = jwt.decode_token(Authentication)
     directory = payload.get("token")
     expire = payload.get("exp")
-    files_attributes = request_body.fileList
+    request_body_attributes = request_body.fileList
+    files_attributes_global = files_attributes_singleton()
+    files_attributes = files_attributes_global.data.get(directory)
     price = Dinero(0, CNY)
-    files_attributes_global = files_attributes_global_var.getter(directory)
-    for file_attributes in files_attributes:
+
+    for file_attributes in request_body_attributes:
         print_filename = file_attributes.get("filename")
         print_side = file_attributes.get('print_side')
         try:
@@ -49,10 +53,11 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
         except Exception as e:
             return ReturnResult(200, '订单不合法', {})
 
-        for file_attributes_global in files_attributes_global:
-            if print_filename == file_attributes_global.filename:
-                if file_attributes_global.total_pages < print_range_end:
+        for file_attributes in files_attributes:
+            if print_filename == file_attributes.filename:
+                if file_attributes.total_pages < print_range_end:
                     return ReturnResult(200, '订单打印范围不合法', {})
+
         if print_range_end < print_range_start:
             return ReturnResult(200, '订单打印范围不合法', {})
         if print_copies < 1:
@@ -72,17 +77,15 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
                 price = Dinero(0.15, CNY).multiply(print_page_number - 1).add(0.2).multiply(int(print_copies)).add(
                     price)
 
-        file_attributes.update({'folder': directory})
+        # file_attributes.update({'folder': directory}) # pending to rewrite
 
     out_trade_no = datetime.now().strftime('%Y%m%d%H%M%S%f')
     bill_attributes = {'files_attributes': files_attributes, 'total_price': float(price.format()),
                        'out_trade_no': out_trade_no, 'expiry': time.time() + 60 * 60 * 3}
-    bills_global_var.setter(out_trade_no, bill_attributes)
 
-    try:
-        files_attributes_global = files_attributes_global_var.getter(directory)
-        files_attributes_global_var.free(directory)
-    except Exception as e:
+    if directory in files_attributes_global.data:
+        files_attributes_global.data.pop(directory)
+    else:
         return ReturnResult(200, '订单生成错误', {})
 
     logging.basicConfig(
@@ -133,6 +136,8 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
             if int(result_code) == 10000:
                 print("成功")
             else:
+                bills_attributes_global = bills_attributes_singleton()
+                bills_attributes_global.data.update({out_trade_no: bill_attributes})
                 return "https://qr.alipay.com/" + eval(response.body)['qr_code'].split("/")[-1]
             return ReturnResult(200, 'success',
                                 {'url': "https://qr.alipay.com/" + eval(response.body)['qr_code'].split("/")[-1]})
@@ -144,7 +149,8 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
 
 
 @router.post("/pay/return")
-async def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotated[str, Form()], body: Annotated[str, Form()]):
+async def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotated[str, Form()],
+                     body: Annotated[str, Form()]):
     if not trade_status == 'TRADE_SUCCESS':
         return {"message": "error"}
     if not jwt.verify_token(body):
@@ -152,10 +158,11 @@ async def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotat
     jwt_payload = jwt.decode_token(body)
     if not jwt_payload.get('out_trade_no') == out_trade_no:
         return {"message": "error"}
-    try:
-        bill_attributes = bills_global_var.getter(out_trade_no)
-        bills_global_var.free(out_trade_no)
-    except Exception as e:
+    bills_attributes_global = bills_attributes_singleton()
+    if out_trade_no in bills_attributes_global.data:
+        bill_attributes = bills_attributes_global.data.get(out_trade_no)
+        bills_attributes_global.data.pop(out_trade_no)
+    else:
         return HTMLResponse(content='success', status_code=200)
     files_attributes = bill_attributes.get('files_attributes')
     for file_attributes in files_attributes:
