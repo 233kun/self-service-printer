@@ -26,9 +26,11 @@ def startup():
 
 
 def clean_expired_directories():
-    directories = os.listdir("uploads")
+    directories = os.listdir("./uploads")
     for directory in directories:
-        if expire_global_var.getter(directory) < datetime.now().timestamp():
+        with open(f'./uploads/{directory}/expire', "r") as f:
+            expire = json.load(f).get('expire')
+        if expire < datetime.now().timestamp():
             for root, dirs, files in os.walk(f"./uploads/{directory}", topdown=False):
                 for file in files:
                     os.remove(f'{root}/{file}')

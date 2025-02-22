@@ -25,8 +25,8 @@ async def lifespan(app: FastAPI):
     startup()  # startup task
     scheduler = BackgroundScheduler()
     scheduler.add_job(clean_expired_directories, 'interval', seconds=1, )  # auto remove expired directory
-    scheduler.add_job(clear_expired_bills, 'interval', seconds=1)
-    # scheduler.start()
+    scheduler.add_job(clear_expired_bills, 'interval', seconds=1, )
+    scheduler.start()
     yield
     ml_models.clear()
 

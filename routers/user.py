@@ -102,14 +102,13 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         payload = jwt.decode_token(Authentication)
         directory = payload.get("token")
 
-        with open(f'uploads/{directory}/expire', 'w') as f:
-            expire = {'expire': datetime.now().timestamp() + 60 * 15}
-            json.dump(expire, f)
-
         files_attributes_global = files_attributes_singleton()
         files_attributes = files_attributes_global.data
         print(files_attributes.get(directory))
         if directory in files_attributes:
+            with open(f'uploads/{directory}/expire', 'w') as f:
+                expire = {'expire': datetime.now().timestamp() + 60 * 15}
+                json.dump(expire, f)
             return ReturnResult(200, "success",{'files_attributes': files_attributes.get(directory), 'token': renewed_token})
         return ReturnResult(200, "success", {'files_attributes': [], 'token': renewed_token})
         # except Exception as e:
