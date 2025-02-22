@@ -12,6 +12,7 @@ class FileModel:
     print_range_end: int
     print_side: str
     folder: str
+    expire: float
 
     def __init__(self):
         self.print_copies = 1

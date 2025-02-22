@@ -1,3 +1,4 @@
+import json
 import os
 from asyncio import sleep
 from datetime import datetime
@@ -36,12 +37,15 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         return {"message": "fail"}
     payload = jwt.decode_token(Authentication)
     directory = payload.get("token")
-    expire = payload.get("exp")
 
     if not os.path.exists("uploads/" + directory):
         mkdir(f"uploads/{directory}")
         mkdir(f"uploads/{directory}/raw")
         mkdir(f"uploads/{directory}/converted")
+
+    with open(f'uploads/{directory}/expire', 'w') as f:
+        expire = {'expire': datetime.now().timestamp() + 60 * 15}
+        json.dump(expire, f)
 
     for index in range(len(files)):
         with open(f'uploads/{directory}/raw/{files[index].filename}', "wb") as f:
@@ -72,7 +76,6 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         #             file_attributes_global.remove(file_attributes_global)
         #     files_attributes_global.append(file_attributes)
         #     files_attributes_global_var.setter(directory,  files_attributes_global)
-        expire_global_var.setter(directory, datetime.now().timestamp() + 60 * 15)
 
         filetype = files[index].filename.rsplit(".", 1)[1]
         if filetype == "pdf":
@@ -98,9 +101,11 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
         renewed_token = jwt.renew_token(Authentication)
         payload = jwt.decode_token(Authentication)
         directory = payload.get("token")
-        expire = payload.get("exp")
 
-        expire_global_var.setter(directory, datetime.now().timestamp() + 60 * 15)
+        with open(f'uploads/{directory}/expire', 'w') as f:
+            expire = {'expire': datetime.now().timestamp() + 60 * 15}
+            json.dump(expire, f)
+
         files_attributes_global = files_attributes_singleton()
         files_attributes = files_attributes_global.data
         print(files_attributes.get(directory))

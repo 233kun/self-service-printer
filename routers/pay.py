@@ -176,5 +176,4 @@ async def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotat
                    f"pending_files/{folder}/{converted_filename}")
         print_queue_global = print_queue.print_queue_singleton()
         print_queue_global.data.append(file_attributes)
-    print('success')
     return HTMLResponse(content='success', status_code=200)

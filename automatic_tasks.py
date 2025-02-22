@@ -6,6 +6,8 @@ from time import sleep
 
 from global_vars import expire_global_var, files_attributes_global_var
 from global_vars import bills_global_var
+from global_vars.bills_attributes_singleton import bills_attributes_singleton
+from global_vars.files_attributes_singleton import files_attributes_singleton
 
 
 def startup():
@@ -23,23 +25,21 @@ def startup():
             os.rmdir(os.path.join(root, name))
 
 
-def clear_expired_directories():
+def clean_expired_directories():
     directories = os.listdir("uploads")
     for directory in directories:
         if expire_global_var.getter(directory) < datetime.now().timestamp():
-            for root, dirs, files in os.walk(f"uploads/{directory}", topdown=False):
-                for name in files:
-                    os.remove(os.path.join(root, name))
-                for name in dirs:
-                    os.rmdir(os.path.join(root, name))
-            os.rmdir(f'uploads/{directory}')
-            files_attributes_global_var.free(directory)
-            expire_global_var.free(directory)
-
+            for root, dirs, files in os.walk(f"./uploads/{directory}", topdown=False):
+                for file in files:
+                    os.remove(f'{root}/{file}')
+                os.rmdir(root)
+            files_attributes_global = files_attributes_singleton()
+            files_attributes_global.data.pop(directory)
 
 
 def clear_expired_bills():
-    bills = bills_global_var.getAll()
-    for key in bills.copy():
-        if bills.get(key).get('expiry') < datetime.now().timestamp():
-            bills_global_var.free(key)
+    bills_attributes_global = bills_attributes_singleton()
+    bills_attributes = bills_attributes_global.data
+    for key in bills_attributes:
+        if bills_attributes.get(key).get('expiry') < datetime.now().timestamp():
+            bills_attributes_global.data.pop(key)

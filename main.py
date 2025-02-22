@@ -13,7 +13,7 @@ import print_queue
 from models import GetJobsAccessLogFilter
 from routers import user, printer
 from routers import pay
-from automatic_tasks import startup, clear_expired_directories, clear_expired_bills
+from automatic_tasks import startup, clean_expired_directories, clear_expired_bills
 
 ml_models = {}
 logging.getLogger('apscheduler.executors.default').propagate = False
@@ -24,9 +24,9 @@ logging.getLogger('apscheduler.executors.default').propagate = False
 async def lifespan(app: FastAPI):
     startup()  # startup task
     scheduler = BackgroundScheduler()
-    scheduler.add_job(clear_expired_directories, 'interval', seconds=1, )  # auto remove expired directory
+    scheduler.add_job(clean_expired_directories, 'interval', seconds=1, )  # auto remove expired directory
     scheduler.add_job(clear_expired_bills, 'interval', seconds=1)
-    scheduler.start()
+    # scheduler.start()
     yield
     ml_models.clear()
 
