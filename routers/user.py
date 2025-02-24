@@ -8,8 +8,7 @@ from fastapi import APIRouter, UploadFile, Header, BackgroundTasks
 from pydantic import BaseModel
 from starlette.responses import FileResponse
 
-from global_vars import files_attributes_global_var, expire_global_var
-from global_var import global_var_setter
+
 from convert import convert_docs, convert_images, convert_excel, convert_pdf
 from global_vars.files_attributes_singleton import files_attributes_singleton
 from models import FileModel, ReturnResult, RemoveFilename, JwtToken
@@ -17,17 +16,6 @@ import jwt
 
 router = APIRouter()
 
-# ** DEPRECATED **
-
-# @router.get("/token/generation")
-# async def get_token():
-#     token = jwt.create_token()
-#     return ReturnResult(200, "success", {"token": token})
-#
-#
-# async def renew_token(jwt_token: JwtToken):
-#     expire_global_var.renew_expire(jwt_token.token)
-#     return ReturnResult(200, "success", {"token": jwt.renew_token(jwt_token.token.__str__())})
 
 
 @router.put("/uploadfile")
@@ -69,13 +57,6 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
                     files_attributes.remove(file_attribute)
         files_attributes.append(file_attributes)
         files_attributes_global.data.update({directory: files_attributes})
-        # try:
-        #     files_attributes_global = files_attributes_global_var.getter(directory)
-        #     for file_attributes_global in files_attributes_global:
-        #         if file_attributes_global.filename == files[index].filename:
-        #             file_attributes_global.remove(file_attributes_global)
-        #     files_attributes_global.append(file_attributes)
-        #     files_attributes_global_var.setter(directory,  files_attributes_global)
 
         filetype = files[index].filename.rsplit(".", 1)[1]
         if filetype == "pdf":

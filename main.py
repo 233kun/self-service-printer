@@ -6,10 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-import global_var
 import setting
-from global_vars import bills_global_var, files_attributes_global_var, expire_global_var
-import print_queue
 from models import GetJobsAccessLogFilter
 from routers import user, printer
 from routers import pay
@@ -42,11 +39,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-global_var.init()  # init in main function
-print_queue.init()
-bills_global_var.init()
-expire_global_var.init()
-files_attributes_global_var.init()
+
 
 logging.getLogger("uvicorn.access").addFilter(GetJobsAccessLogFilter())
 

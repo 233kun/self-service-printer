@@ -7,7 +7,7 @@ from starlette.responses import FileResponse
 
 import global_var
 from models import ReturnResult, UpdateJob, UpdateState
-from print_queue import get_job, get_queue_size, queue_pop, print_queue_singleton
+from print_queue import print_queue_singleton
 from setting import SECRET_KEY
 
 router = APIRouter()

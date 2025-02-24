@@ -6,19 +6,16 @@ import pythoncom
 import win32com.client
 from pypdf import PdfReader
 
-from global_vars import files_attributes_global_var
 from global_vars.files_attributes_singleton import files_attributes_singleton
 
 
 def convert_docs(directory, filename):
     files_attributes_global = files_attributes_singleton()
     files_attributes = files_attributes_global.data.get(directory)
-    # files_attributes = files_attributes_global_var.getter(directory)
 
     for file_attributes in files_attributes:
         if file_attributes.filename == filename:
             file_attributes.convert_state = 'processing'
-    # files_attributes_global_var.setter(directory, files_attributes)
     files_attributes_global.data.update({directory: files_attributes})
 
     pythoncom.CoInitialize()
@@ -158,4 +155,4 @@ def convert_pdf(directory, filename):
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'error'
-        files_attributes_global_var.setter(directory, files_attributes)
+                files_attributes_global.data.update({directory: files_attributes})

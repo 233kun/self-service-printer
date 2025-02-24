@@ -4,8 +4,6 @@ import os
 from datetime import datetime, time
 from time import sleep
 
-from global_vars import expire_global_var, files_attributes_global_var
-from global_vars import bills_global_var
 from global_vars.bills_attributes_singleton import bills_attributes_singleton
 from global_vars.files_attributes_singleton import files_attributes_singleton
 

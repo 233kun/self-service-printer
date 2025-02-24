@@ -2,8 +2,6 @@ import os
 import time
 from datetime import datetime
 
-from Crypto.Random import random
-from alipay.aop.api.util.SignatureUtils import verify_with_rsa
 from dinero import Dinero
 from dinero.currencies import CNY
 from fastapi import APIRouter, Form, Header
@@ -24,11 +22,7 @@ import jwt
 import print_queue
 from global_vars.files_attributes_singleton import files_attributes_singleton
 from setting import SERVER_HOST, APP_ID, ALIPAY_PRIVATE_KEY, ALIPAY_PUBLIC_KEY, SECRET_KEY
-from global_vars import bills_global_var, files_attributes_global_var, expire_global_var
-from global_var import global_var_isKey_exist
 from models import FileList, ReturnResult
-from print_queue import queue_push
-from fastapi import FastAPI, Request
 from global_vars.bills_attributes_singleton import bills_attributes_singleton
 
 router = APIRouter()
