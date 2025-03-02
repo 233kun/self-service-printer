@@ -62,25 +62,6 @@ class ReturnResult:
         self.data = data
 
 
-class GlobalVar:
-    _global_var: dict
-
-    def __init__(self):
-        self._global_dict = {}
-
-    def setter(self, key, value):
-        self._global_dict[key] = value
-
-    def getter(self, key):
-        return self._global_dict[key]
-
-    def getAll(self):
-        return self._global_dict
-
-    def free(self, key):
-        del self._global_dict[key]
-
-
 class GetJobsAccessLogFilter(logging.Filter):
     def filter(self, record):
         if record.args[2] == '/printer/jobs':

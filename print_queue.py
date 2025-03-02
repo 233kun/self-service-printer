@@ -1,6 +1,3 @@
-import models
-
-
 class print_queue_singleton:
     instance = None
     data = []

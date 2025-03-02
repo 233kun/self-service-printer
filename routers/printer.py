@@ -1,11 +1,8 @@
-import json
 import os
 
 from fastapi import APIRouter
-from pydantic import BaseModel
 from starlette.responses import FileResponse
 
-import global_var
 from models import ReturnResult, UpdateJob, UpdateState
 from print_queue import print_queue_singleton
 from setting import SECRET_KEY
