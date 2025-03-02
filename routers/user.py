@@ -104,7 +104,6 @@ async def get_convert_status(Authentication: Annotated[str | None, Header()]):
         files_attributes_global = files_attributes_singleton()
         files_attributes = files_attributes_global.data.get(directory)
 
-        print(files_attributes)
         converting_filenames = []
         for file_attributes in files_attributes:
             if file_attributes.convert_state == "processing":

@@ -1,3 +1,4 @@
+import logging
 import os
 from shutil import copyfile
 
@@ -45,7 +46,7 @@ def convert_docs(directory, filename):
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'error'
         files_attributes_global.data.update({directory: files_attributes})
-        raise Exception(e)
+        logging.error(f'Exception while converting DOC\nFilename: {filename}', e)
     finally:
         doc.Close()
         word.Quit()
@@ -91,7 +92,7 @@ def convert_excel(directory, filename):
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'error'
         files_attributes_global.data.update({directory: files_attributes})
-        raise Exception(e)
+        logging.error(f'Exception while converting EXCEL\nFilename: {filename}', e)
     finally:
         sheets.Close()
         excel.Quit()
@@ -127,6 +128,7 @@ def convert_images(directory, filename):
 
     except Exception as e:
         # error handling here
+        logging.error(f'Exception while converting image\nFilename: {filename}', e)
         raise Exception(e)
 
 
@@ -156,3 +158,4 @@ def convert_pdf(directory, filename):
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'error'
                 files_attributes_global.data.update({directory: files_attributes})
+        logging.error(f'Exception while converting PDF\nFilename: {filename}', e)
