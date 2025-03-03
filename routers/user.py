@@ -85,7 +85,6 @@ async def get_folder(Authentication: Annotated[str | None, Header()]):
 
         files_attributes_global = files_attributes_singleton()
         files_attributes = files_attributes_global.data
-        print(files_attributes.get(directory))
         if directory in files_attributes:
             with open(f'uploads/{directory}/expire', 'w') as f:
                 expire = {'expire': datetime.now().timestamp() + 60 * 15}

@@ -113,7 +113,7 @@ def convert_images(directory, filename):
     output_filename = filename.rsplit(".", 1)[0]
     try:
         with open(f"uploads/{directory}/converted/{output_filename}.pdf", "wb") as f:
-            f.write(img2pdf.convert(f"uploads/{directory}/raw/{filename}", layout_fun=layout_fun))
+            f.write(img2pdf.convert(f"uploads/{directory}/raw/{filename}", layout_fun=layout_fun, rotation=img2pdf.Rotation.ifvaild))
 
             files_attributes = files_attributes_global.data.get(directory)
             for file_attributes in files_attributes:
