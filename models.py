@@ -46,9 +46,9 @@ class UpdateJob(BaseModel):
 
 class UpdateState(BaseModel):
     filename: str
-    path: str
+    folder: str
     state: str
-    authorization: str
+    authentication: str
 
 
 class ReturnResult:

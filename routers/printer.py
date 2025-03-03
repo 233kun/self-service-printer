@@ -25,8 +25,8 @@ def get_file(path: str, filename: str):
 
 @router.post("/printer/job/state")
 def update_job_status(update_state: UpdateState):
-    if not update_state.authorization == SECRET_KEY:
-        return ReturnResult(200, 'authorization error')
+    if not update_state.authentication == SECRET_KEY:
+        return ReturnResult(200, 'authorization error', {})
     print_queue = print_queue_singleton().data
     for index in range(len(print_queue)):
         job_attributes = print_queue[index]
@@ -34,7 +34,7 @@ def update_job_status(update_state: UpdateState):
         filename = job_attributes.get('filename')
         if filename != update_state.filename:
             continue
-        if folder != update_state.path:
+        if folder != update_state.folder:
             continue
         print_queue.pop(index - 1)
         filename_pdf = filename.rsplit('.', 1)[0] + '.pdf'

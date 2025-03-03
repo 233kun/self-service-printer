@@ -38,7 +38,7 @@ def polling_jobs(interval):
             logger.error(e)
         else:
             json_body = {'filename': job_attrs.get('filename'),
-                         'path': job_attrs.get('folder'),
+                         'folder': job_attrs.get('folder'),
                          'state': 'success',
                          'authentication': SECRET_KEY}
             params = json.dumps(json_body)
@@ -116,7 +116,7 @@ if __name__ == '__main__':
         try:
             if job_state == 'error':
                 json_body = {'filename': job_attributes.get('filename'),
-                             'out_trade_no': job_attributes.get('out_trade_no')}
+                             'folder': job_attributes.get('folder')}
                 params = json.dumps(json_body)
                 headers = {"Content-type": "application/json",
                            "accept": "application/json"}
