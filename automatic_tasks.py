@@ -34,7 +34,10 @@ def clean_expired_directories():
                     os.remove(f'{root}/{file}')
                 os.rmdir(root)
             files_attributes_global = files_attributes_singleton()
-            files_attributes_global.data.pop(directory)
+            try:
+                files_attributes_global.data.pop(directory)
+            except BaseException:
+                pass
 
 
 def clear_expired_bills():
