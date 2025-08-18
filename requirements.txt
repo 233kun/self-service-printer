@@ -5,7 +5,7 @@ fastapi==0.115.11
 img2pdf==0.5.1
 pydantic==2.10.6
 pypdf==5.3.1
-pywin32==306
+pywin32==311
 python_alipay_sdk==3.3.0
 python_jose==3.3.0
 starlette==0.46.0

@@ -9,9 +9,9 @@ from pydantic import BaseModel
 from starlette.responses import FileResponse
 
 
-from convert import convert_docs, convert_images, convert_excel, convert_pdf
+#from convert_msoffice import convert_docs, convert_images, convert_excel, convert_pdf
 from global_vars.files_attributes_singleton import files_attributes_singleton
-from models import FileModel, ReturnResult, RemoveFilename, JwtToken
+from models import FileModel, ReturnResult, RemoveFilename, JwtToken, ConvertFactory
 import jwt
 
 router = APIRouter()
@@ -59,14 +59,16 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
         files_attributes_global.data.update({directory: files_attributes})
 
         filetype = files[index].filename.rsplit(".", 1)[1]
+
+        convert = ConvertFactory().convert("MSOffice")
         if filetype == "pdf":
-            background_tasks.add_task(convert_pdf, directory, files[index].filename)
+            background_tasks.add_task(convert.convert_pdf(), directory, files[index].filename)
         if filetype == "doc" or filetype == "docx":
-            background_tasks.add_task(convert_docs, directory, files[index].filename)
+            background_tasks.add_task(convert.convert_docs(), directory, files[index].filename)
         if filetype == "xlsx" or filetype == "xls":
-            background_tasks.add_task(convert_excel, directory, files[index].filename)
+            background_tasks.add_task(convert.convert_excel(), directory, files[index].filename)
         if filetype == "jpeg" or filetype == "jpg" or filetype == "png":
-            background_tasks.add_task(convert_images, directory, files[index].filename)
+            background_tasks.add_task(convert.convert_images(), directory, files[index].filename)
     return ReturnResult(200, "success", files)
 
 
