@@ -1,7 +1,7 @@
 import logging
 
 from pydantic import BaseModel
-
+from convert_msoffice import ConvertMSuffice
 
 class FileModel:
     filename: str
@@ -61,6 +61,13 @@ class ReturnResult:
         self.message = message
         self.data = data
 
+class ConvertFactory:
+    @staticmethod
+    def convert(name):
+        if name == "MSOffice":
+            return ConvertMSuffice()
+        if name == "WPS":
+            return
 
 class GetJobsAccessLogFilter(logging.Filter):
     def filter(self, record):
