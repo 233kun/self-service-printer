@@ -1,14 +1,15 @@
 import logging
 import os
+import sys
 from shutil import copyfile
 
 import img2pdf
-import pythoncom
-import win32com.client
 from pypdf import PdfReader
 
 from global_vars.files_attributes_singleton import files_attributes_singleton
-
+if sys.platform.startswith('win') == 'win':
+    import pythoncom
+    import win32com.client
 
 class ConvertMSuffice():
 
