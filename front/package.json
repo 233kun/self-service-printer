@@ -1,0 +1,28 @@
+{
+  "name": "untitled12",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tabler/icons-vue": "^2.46.0",
+    "axios": "^1.6.7",
+    "decimal.js": "^10.4.3",
+    "element-plus": "^2.5.5",
+    "http_server": "^1.0.12",
+    "pdfjs-dist": "^4.0.379",
+    "vue": "^3.3.11",
+    "vue-pdf-embed": "^2.0.3",
+    "vue-router": "^4.2.5",
+    "vue3-pdfjs": "^0.1.6"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.5.2",
+    "naive-ui": "^2.37.3",
+    "vite": "^5.0.10"
+  }
+}
