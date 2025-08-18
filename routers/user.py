@@ -8,7 +8,7 @@ from fastapi import APIRouter, UploadFile, Header, BackgroundTasks
 from pydantic import BaseModel
 from starlette.responses import FileResponse
 
-
+import setting
 #from convert_msoffice import convert_docs, convert_images, convert_excel, convert_pdf
 from global_vars.files_attributes_singleton import files_attributes_singleton
 from models import FileModel, ReturnResult, RemoveFilename, JwtToken, ConvertFactory
@@ -60,7 +60,7 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
 
         filetype = files[index].filename.rsplit(".", 1)[1]
 
-        convert = ConvertFactory().convert("MSOffice")
+        convert = ConvertFactory().convert(setting.CONVERT_TOOL)
         if filetype == "pdf":
             background_tasks.add_task(convert.convert_pdf(), directory, files[index].filename)
         if filetype == "doc" or filetype == "docx":

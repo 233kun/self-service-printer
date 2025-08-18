@@ -2,6 +2,8 @@ import logging
 
 from pydantic import BaseModel
 from convert_msoffice import ConvertMSuffice
+from convert_wps import ConvertWPS
+
 
 class FileModel:
     filename: str
@@ -67,7 +69,7 @@ class ConvertFactory:
         if name == "MSOffice":
             return ConvertMSuffice()
         if name == "WPS":
-            return
+            return ConvertWPS()
 
 class GetJobsAccessLogFilter(logging.Filter):
     def filter(self, record):
