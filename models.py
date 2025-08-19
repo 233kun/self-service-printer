@@ -1,7 +1,7 @@
 import logging
 
 from pydantic import BaseModel
-from convert_msoffice import ConvertMSuffice
+from convert_msoffice import ConvertMSOffice
 from convert_wps import ConvertWPS
 
 
@@ -66,10 +66,12 @@ class ReturnResult:
 class ConvertFactory:
     @staticmethod
     def convert(name):
-        if name == "MSOffice":
-            return ConvertMSuffice()
-        if name == "WPS":
+        if name == 'MSOffice':
+            return ConvertMSOffice()
+        if name == 'WPS':
             return ConvertWPS()
+        logging.error('No converter tool found for ' + name)
+        return None
 
 class GetJobsAccessLogFilter(logging.Filter):
     def filter(self, record):

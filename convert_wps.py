@@ -5,9 +5,8 @@ from global_vars.files_attributes_singleton import files_attributes_singleton
 
 
 class ConvertWPS():
-
-    def convert_word(directory, filename):
-
+    @staticmethod
+    def convert_docs(directory, filename):
         hr, rpc = createWpsRpcInstance()
         hr, app = rpc.getWpsApplication()
         files_attributes_global = files_attributes_singleton()

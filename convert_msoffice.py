@@ -11,7 +11,7 @@ if sys.platform.startswith('win') == 'win':
     import pythoncom
     import win32com.client
 
-class ConvertMSuffice():
+class ConvertMSOffice():
 
     def convert_docs(directory, filename):
         files_attributes_global = files_attributes_singleton()
