@@ -1,10 +1,12 @@
+from pywpsrpc.rpcetapi import createEtRpcInstance
 from pywpsrpc.rpcwpsapi import (createWpsRpcInstance, wpsapi)
 from pywpsrpc import RpcIter
 
+from convert_util import ConvertUtil
 from global_vars.files_attributes_singleton import files_attributes_singleton
 
 
-class ConvertWPS():
+class ConvertWPS(ConvertUtil):
     @staticmethod
     def convert_docs(directory, filename):
         hr, rpc = createWpsRpcInstance()
@@ -30,5 +32,7 @@ class ConvertWPS():
         doc.SaveAs2(f'uploads/{directory}/converted/{output_filename}', 17)
 
         app.Quit(wpsapi.wdDoNotSaveChanges)
+    @staticmethod
     def convert_excel(directory, filename):
-        pass
+        hr, rpc = createEtRpcInstance()
+        hr, app = rpc.getEtApplication()
