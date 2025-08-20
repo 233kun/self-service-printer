@@ -2,7 +2,7 @@ import logging
 import traceback
 
 from pypdf import PdfReader
-from pywpsrpc.rpcetapi import createEtRpcInstance
+from pywpsrpc.rpcetapi import createEtRpcInstance, etapi
 from pywpsrpc.rpcwpsapi import (createWpsRpcInstance, wpsapi)
 from pywpsrpc import RpcIter
 
@@ -59,3 +59,32 @@ class ConvertWPS(ConvertUtil):
     def convert_excel(directory, filename):
         hr, rpc = createEtRpcInstance()
         hr, app = rpc.getEtApplication()
+        hr, doc = app.Workbooks.Open(f'uploads/{directory}/raw/{filename}')
+
+        files_attributes_global = files_attributes_singleton()
+        files_attributes = files_attributes_global.data.get(directory)
+        for file_attributes in files_attributes:
+            if file_attributes.filename == filename:
+                file_attributes.convert_state = 'processing'
+        files_attributes_global.data.update({directory: files_attributes})
+        try:
+            output_filename = filename.rsplit(".", 1)[0] + '.pdf'
+            doc.ExportAsFixedFormat(etapi.XlFixedFormatType.xlTypePDF, f'uploads/{directory}/converted/{output_filename}')
+            for file_attributes in files_attributes:
+                if file_attributes.filename == filename:
+                    file_attributes.convert_state = 'success'
+                    converted_filename = file_attributes.filename.rsplit(".", 1)[0] + '.pdf'
+                    reader = PdfReader(f"uploads/{directory}/converted/{converted_filename}")
+                    file_attributes.total_pages = len(reader.pages)
+                    file_attributes.print_range_end = len(reader.pages)
+
+            files_attributes_global.data.update({directory: files_attributes})
+        except Exception as e:
+            for file_attributes in files_attributes:
+                if file_attributes.filename == filename:
+                    file_attributes.convert_state = 'error'
+            files_attributes_global.data.update({directory: files_attributes})
+            print(e)
+            logging.error(f'Exception while converting DOC\nFilename: {filename}', e)
+        finally:
+            app.Quit()
