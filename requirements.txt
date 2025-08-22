@@ -1,6 +1,6 @@
 alipay_sdk_python==3.7.33
 APScheduler==3.10.4
-dinero==0.3.1
+dinero
 fastapi==0.115.11
 img2pdf==0.5.1
 pydantic==2.10.6
@@ -12,4 +12,4 @@ starlette==0.46.0
 typing_extensions==4.12.2
 uvicorn==0.34.0
 python-multipart==0.0.20
-pywpsrpc==1.0.1 ; sys_platform == 'linux'
+pywpsrpc
