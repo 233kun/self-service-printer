@@ -1,4 +1,2 @@
-FROM ubuntu:latest
-LABEL authors="233kun"
+FROM caddy:latest
 
-ENTRYPOINT ["top", "-b"]
