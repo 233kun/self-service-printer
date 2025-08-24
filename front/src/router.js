@@ -1,13 +1,12 @@
-import Home from "@/pages/Home.vue";
 import {createRouter, createWebHistory} from "vue-router";
 import AndroidPayTutorial from "@/pages/AndroidPayTutorial.vue";
 const routes = [
     {
         path: "/",
         name: "Home",
-        component: Home,
+        component: () => import ("@/pages/Home.vue"),
         meta: {
-            title: window.config.title
+            title: "自助打印",
         }
     },
     {

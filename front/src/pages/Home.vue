@@ -143,9 +143,9 @@ const handleFormFilesInput = () => { //handleFileUpload
 const hrefTutorial = () => {
   const ua = navigator.userAgent
   if (ua.includes('iphone')) {
-    window.open('/public/static/tutorial/ios-tutorial.html')
+    window.open('static/tutorial/ios-tutorial.html')
   } else
-    window.open('/public/static/tutorial/android-tutorial.html')
+    window.open('static/tutorial/android-tutorial.html')
 }
 onMounted(async () => {
   // console.log(window.config.test)
