@@ -1,0 +1,7 @@
+window.config = {
+    baseURL: '',
+    title: '',
+    price: ,
+    discountedPrice: 
+}
+

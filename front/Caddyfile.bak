@@ -1,5 +1,7 @@
-:80 {
+DOMAIN {
     root * /src/dist
 
     file_server
+
+    TLS
 }
