@@ -105,9 +105,6 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
     to_encode = {'out_trade_no': bill_attributes.get('out_trade_no')}
     encode_jwt = encode(to_encode, SECRET_KEY, algorithm='HS256')
     model.body = encode_jwt
-    print(encode_jwt)
-    print(type(encode_jwt))
-    print(encode_jwt)
 
     request = AlipayTradePrecreateRequest(biz_model=model)
 
