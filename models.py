@@ -1,8 +1,8 @@
 import logging
 
 from pydantic import BaseModel
-from convert_msoffice import ConvertMSOffice
-from convert_wps import ConvertWPS
+from convert.convert_msoffice import ConvertMSOffice
+from convert.convert_wps import ConvertWPS
 
 
 class FileModel:

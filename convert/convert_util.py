@@ -40,12 +40,13 @@ class ConvertUtil(object):
                     file_attributes.print_range_end = len(reader.pages)
                     file_attributes.convert_state = 'success'
             files_attributes_global.data.update({directory: files_attributes})
-        except BaseException as e:
+        except Exception as e:
             for file_attributes in files_attributes:
                 if file_attributes.filename == filename:
                     file_attributes.convert_state = 'error'
                     files_attributes_global.data.update({directory: files_attributes})
-            logging.error(f'Exception while converting PDF\nFilename: {filename}', e)
+                    logging.error(f"Failed to convert file to PDF: {filename}")
+                    logging.error(f"Exception: {e}")
 
     @staticmethod
     def convert_images(directory, filename):
@@ -77,6 +78,5 @@ class ConvertUtil(object):
                 files_attributes_global.data.update({directory: files_attributes})
 
         except Exception as e:
-            # error handling here
-            logging.error(f'Exception while converting image\nFilename: {filename}', e)
-            raise Exception(e)
+            logging.error(f"Failed to convert file to PDF: {filename}")
+            logging.error(f"Exception: {e}")

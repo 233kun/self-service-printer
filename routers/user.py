@@ -5,13 +5,11 @@ from datetime import datetime
 from os import mkdir
 from typing import Annotated
 from fastapi import APIRouter, UploadFile, Header, BackgroundTasks
-from pydantic import BaseModel
 from starlette.responses import FileResponse
 
-import convert_msoffice
 import setting
 from global_vars.files_attributes_singleton import files_attributes_singleton
-from models import FileModel, ReturnResult, RemoveFilename, JwtToken, ConvertFactory
+from models import FileModel, ReturnResult, RemoveFilename, ConvertFactory
 import jwt
 
 router = APIRouter()

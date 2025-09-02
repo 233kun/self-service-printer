@@ -1,17 +1,20 @@
 import logging
-import os
-import sys
+import traceback
+
 from pypdf import PdfReader
+from pywpsrpc.rpcetapi import createEtRpcInstance, etapi
+from pywpsrpc.rpcwpsapi import (createWpsRpcInstance, wpsapi)
+from pywpsrpc import RpcIter
 
-from convert_util import ConvertUtil
+from convert.convert_util import ConvertUtil
 from global_vars.files_attributes_singleton import files_attributes_singleton
-if sys.platform.startswith('win') == 'win':
-    import pythoncom
-    import win32com.client
 
-class ConvertMSOffice(ConvertUtil):
 
+class ConvertWPS(ConvertUtil):
+    @staticmethod
     def convert_docs(directory, filename):
+        hr, rpc = createWpsRpcInstance()
+        hr, app = rpc.getWpsApplication()
         files_attributes_global = files_attributes_singleton()
         files_attributes = files_attributes_global.data.get(directory)
 
@@ -19,20 +22,20 @@ class ConvertMSOffice(ConvertUtil):
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'processing'
         files_attributes_global.data.update({directory: files_attributes})
-
-        pythoncom.CoInitialize()
-        wdFormatPDF = 17
-        word = win32com.client.Dispatch("Word.Application")
-
-        input_doc = os.path.abspath(f"uploads/{directory}/raw/{filename}")
-        output_filename = filename.rsplit(".", 1)[0] + '.pdf'
-        output_pdf = os.path.abspath(f"uploads/{directory}/converted/{output_filename}")
-
-        global doc
         try:
-            doc = word.Documents.Open(input_doc)
-            doc.SaveAs(output_pdf, FileFormat=wdFormatPDF)
-            files_attributes = files_attributes_global.data.get(directory)
+            hr, doc = app.Documents.Open(f'uploads/{directory}/raw/{filename}')
+            def onDocumentBeforeSave(doc):
+                print("onDocumentBeforeSave called for doc: ", doc.Name)
+                return True, False
+
+            rpc.registerEvent(app,
+                              wpsapi.DIID_ApplicationEvents4,
+                              "DocumentBeforeSave",
+                              onDocumentBeforeSave)
+
+            output_filename = filename.rsplit(".", 1)[0] + '.pdf'
+            doc.SaveAs2(f'uploads/{directory}/converted/{output_filename}', 17)
+
             for file_attributes in files_attributes:
                 if file_attributes.filename == filename:
                     file_attributes.convert_state = 'success'
@@ -47,37 +50,26 @@ class ConvertMSOffice(ConvertUtil):
                 if file_attributes.filename == filename:
                     file_attributes.convert_state = 'error'
             files_attributes_global.data.update({directory: files_attributes})
-            logging.error(f'Exception while converting DOC\nFilename: {filename}', e)
+            logging.error(f"Failed to convert file to PDF: {filename}")
+            logging.error(f"Exception: {e}")
         finally:
-            doc.Close()
-            word.Quit()
-            pythoncom.CoUninitialize()
+            app.Quit(wpsapi.wdDoNotSaveChanges)
 
+    @staticmethod
     def convert_excel(directory, filename):
+        hr, rpc = createEtRpcInstance()
+        hr, app = rpc.getEtApplication()
+        hr, doc = app.Workbooks.Open(f'uploads/{directory}/raw/{filename}')
+
         files_attributes_global = files_attributes_singleton()
         files_attributes = files_attributes_global.data.get(directory)
-
         for file_attributes in files_attributes:
             if file_attributes.filename == filename:
                 file_attributes.convert_state = 'processing'
         files_attributes_global.data.update({directory: files_attributes})
-
-        pythoncom.CoInitialize()
-        excel = win32com.client.DispatchEx("Excel.Application")
-        excel.Visible = False
-        excel.DisplayAlerts = 0
-
-        input_excel = os.path.abspath(f"uploads/{directory}/raw/{filename}")
-        output_filename = filename.rsplit(".", 1)[0] + '.pdf'
-        output_pdf = os.path.abspath(f"uploads/{directory}/converted/{output_filename}")
-
-        excel.Quit()
-        global sheets
         try:
-            sheets = excel.Workbooks.Open(input_excel, False)
-            sheets.ExportAsFixedFormat(0, output_pdf)
-
-            files_attributes = files_attributes_global.data.get(directory)
+            output_filename = filename.rsplit(".", 1)[0] + '.pdf'
+            doc.ExportAsFixedFormat(etapi.XlFixedFormatType.xlTypePDF, f'uploads/{directory}/converted/{output_filename}')
             for file_attributes in files_attributes:
                 if file_attributes.filename == filename:
                     file_attributes.convert_state = 'success'
@@ -92,8 +84,7 @@ class ConvertMSOffice(ConvertUtil):
                 if file_attributes.filename == filename:
                     file_attributes.convert_state = 'error'
             files_attributes_global.data.update({directory: files_attributes})
-            logging.error(f'Exception while converting EXCEL\nFilename: {filename}', e)
+            logging.error(f"Failed to convert file to PDF: {filename}")
+            logging.error(f"Exception: {e}")
         finally:
-            sheets.Close()
-            excel.Quit()
-            pythoncom.CoUninitialize()
+            app.Quit()
