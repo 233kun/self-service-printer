@@ -1,7 +1,6 @@
 window.config = {
-    baseURL: '',
-    title: '',
-    price: ,
-    discountedPrice: 
+  baseURL: '',
+  price: ,
+  discountedPrice: 
 }
 

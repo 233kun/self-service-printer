@@ -13,10 +13,8 @@ if [ -n "$crt_file" ] && [ -n "$key_file" ]; then
   mv /etc/caddy/Caddyfile.bak /etc/caddy/Caddyfile
 elif [ -n "$EMAIL" ]; then
   sed -i "s|DOMAIN|$DOMAIN|" /etc/caddy/Caddyfile.bak
-  sed -i "s|TLS|tls $EMAIL|" /etc/caddy/Caddyfile.bak
+  sed -i "s|TLS||" /etc/caddy/Caddyfile.bak
   mv /etc/caddy/Caddyfile.bak /etc/caddy/Caddyfile
 fi
 
-#cat dist/static/config.js
-#cat /etc/caddy/Caddyfile
-caddy run --config /etc/caddy/Caddyfile --adapter caddyfile &
+caddy run --config /etc/caddy/Caddyfile

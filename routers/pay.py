@@ -100,7 +100,7 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
     model = AlipayTradeCreateModel()
     model.out_trade_no = bill_attributes.get('out_trade_no')
     model.total_amount = bill_attributes.get('total_price')
-    model.subject = "30栋304打印店"
+    model.subject = "自助打印"
     model.timeout_express = '15m'
     to_encode = {'out_trade_no': bill_attributes.get('out_trade_no')}
     encode_jwt = encode(to_encode, SECRET_KEY, algorithm='HS256')

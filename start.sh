@@ -8,7 +8,6 @@ check_empty_env() {
   [[ -z "$APP_ID" ]] && empty_vars+=("APP_ID")
   [[ -z "$ALIPAY_PUBLIC_KEY" ]] && empty_vars+=("ALIPAY_PUBLIC_KEY")
   [[ -z "$ALIPAY_PRIVATE_KEY" ]] && empty_vars+=("ALIPAY_PRIVATE_KEY")
-  [[ -z "$CONVERT_TOOL" ]] && empty_vars+=("CONVERT_TOOL")
   if [ ${#empty_vars[@]} -gt 0 ]; then
     echo "警告: 以下必需的环境变量为空或未设置:"
     for var in "${empty_vars[@]}"; do
@@ -25,7 +24,7 @@ sed -i "s|SERVER_HOST = ''|SERVER_HOST = '$SECRET_KEY'|" setting.py.tmp
 sed -i "s|APP_ID = ''|APP_ID = '$APP_ID'|" setting.py.tmp
 sed -i "s|ALIPAY_PUBLIC_KEY = ''|ALIPAY_PUBLIC_KEY = '$ALIPAY_PUBLIC_KEY'|" setting.py.tmp
 sed -i "s|ALIPAY_PRIVATE_KEY = ''|ALIPAY_PRIVATE_KEY = '$ALIPAY_PRIVATE_KEY'|" setting.py.tmp
-sed -i "s|CONVERT_TOOL = ''|CONVERT_TOOL = '$CONVERT_TOOL'|" setting.py.tmp
+sed -i "s|CONVERT_TOOL = ''|CONVERT_TOOL = 'WPS'|" setting.py.tmp
 
 mv setting.py.tmp setting.py
 
@@ -43,8 +42,6 @@ else
   echo "错误：HTTPS未正确配置"
 fi
 
-cat setting.py
-
 if (($ACCEPT_WPS_EULA == "true")); then
   timeout 3 xvfb-run wps
   echo "common\AcceptedEULA=true" >>/root/.config/Kingsoft/Office.conf
@@ -58,5 +55,8 @@ else
   exit 1
 fi
 
+sed -i "s|VNC_PASSWORD|$VNC_PASSWORD|" /etc/supervisor/conf.d/vnc.conf
+
 /usr/bin/supervisord -n &
-python3 ./main.py
+caddy run --config /etc/caddy/Caddyfile &
+xvfb-run python3 ./main.py

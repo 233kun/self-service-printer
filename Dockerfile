@@ -5,10 +5,12 @@ ENV SECRET_KEY=""
 ENV APP_ID=""
 ENV ALIPAY_PUBLIC_KEY=""
 ENV ALIPAY_PRIVATE_KEY=""
+ENV SERVER_HOST=""
 ENV CONVERT_TOOL=""
 ENV DOMAIN=""
 ENV EMAIL=""
 ENV ACCEPT_WPS_EULA=""
+ENV VNC_PASSWORD="password"
 
 RUN apt-get update && apt-get install -y \
   lxqt x11vnc xvfb dbus-x11 supervisor\
