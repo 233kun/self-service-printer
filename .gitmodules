@@ -1,0 +1,3 @@
+[submodule "front/public/pdfjs"]
+	path = front/public/pdfjs
+	url = https://github.com/233kun/pdfjs-dist
