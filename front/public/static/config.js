@@ -1,5 +1,5 @@
 window.config = {
-    baseURL: 'http://127.0.0.1:8000',
+    baseURL: 'https://print.233kun.top',
     price: 0.2,
     discountedPrice: 0.1
 }
