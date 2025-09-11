@@ -1,17 +1,28 @@
 import os
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials
 from starlette.responses import FileResponse
 
+from jwt import security
 from models import ReturnResult, UpdateJob, UpdateState
 from print_queue import print_queue_singleton
 from setting import SECRET_KEY
 
 router = APIRouter()
 
+def verify_secret_key(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    secret_key = credentials.credentials
+    if secret_key == SECRET_KEY:
+        return True
+    raise HTTPException(
+        status_code=401,
+        detail="Invalid secret key",
+    )
+    return False
 
 @router.get("/printer/jobs")
-def printer_get_job():
+def printer_get_job(bool = Depends(verify_secret_key)):
     print_queue = print_queue_singleton().data
     if len(print_queue) == 0:
         return ReturnResult(200, 'success', {'jobs': None})
@@ -19,12 +30,12 @@ def printer_get_job():
 
 
 @router.get("/printer/file")
-def get_file(path: str, filename: str):
+def get_file(path: str, filename: str, bool = Depends(verify_secret_key)):
     return FileResponse(f"pending_files/{path}/{filename}")
 
 
 @router.post("/printer/job/state")
-def update_job_status(update_state: UpdateState):
+def update_job_status(update_state: UpdateState, bool = Depends(verify_secret_key)):
     if not update_state.authentication == SECRET_KEY:
         return ReturnResult(200, 'authorization error', {})
     print_queue = print_queue_singleton().data
