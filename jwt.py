@@ -1,4 +1,6 @@
 import random
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from ctypes import Union
 from datetime import datetime, timezone, timedelta
 
@@ -15,13 +17,16 @@ def create_token():
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-
-def verify_token(token: str):
+security = HTTPBearer()
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
     try:
-        jwt.decode(token, SECRET_KEY)
-        return True
+        return jwt.decode(token, SECRET_KEY)
     except Exception as e:
-        return False
+        raise HTTPException(
+            status_code=401,
+            detail="{message: Invalid token}",
+        )
 
 
 def renew_token(token: str):

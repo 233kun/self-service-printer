@@ -83,7 +83,7 @@ def execute_ipptool(job_attributes):
     return job_id
 
 
-def poll_cups_job_state(job_id, timeout, interval=5):
+def poll_cups_job_state(job_id, job_attributes, timeout, interval=5):
     start_time = time()
     while True:
         ipp_file_path = os.path.abspath("ipp_files/job_attributes.ipp")
@@ -98,9 +98,13 @@ def poll_cups_job_state(job_id, timeout, interval=5):
         end = job_state.stdout.find("\n", start)
         job_state = job_state.stdout[start + 19:end]
         if job_state == "completed":
+            print_filename = job_attributes.get('filename').rsplit('.', 1)[0] + '.pdf'
+            if os.path.exists(f'downloads/{print_filename}'):
+                os.remove(f'downloads/{print_filename}')
             return 'success'
         if time() - start_time > timeout:
             return 'error'
+        sleep(interval)
 
 
 if __name__ == '__main__':
@@ -108,7 +112,7 @@ if __name__ == '__main__':
         try:
             job_attributes = polling_jobs(interval=1)
             job_id = execute_ipptool(job_attributes)
-            job_state = poll_cups_job_state(job_id, timeout=job_attributes.get('total_pages') * 10)
+            job_state = poll_cups_job_state(job_id, job_attributes, timeout=job_attributes.get('total_pages') * 10)
         except Exception as e:
             logger.error(e)
             continue

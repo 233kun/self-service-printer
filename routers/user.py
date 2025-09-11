@@ -1,10 +1,14 @@
 import json
 import os
+
+import jose
+from fastapi import Depends
 from asyncio import sleep
 from datetime import datetime
 from os import mkdir
 from typing import Annotated
 from fastapi import APIRouter, UploadFile, Header, BackgroundTasks
+from jose.jwt import decode
 from starlette.responses import FileResponse
 
 import setting
@@ -17,13 +21,10 @@ router = APIRouter()
 
 
 @router.put("/uploadfile")
-async def create_upload_file(Authentication: Annotated[str | None, Header()], files: list[UploadFile],
-                             background_tasks: BackgroundTasks):
-    if not jwt.verify_token(Authentication):
-        return {"message": "fail"}
-    payload = jwt.decode_token(Authentication)
+async def create_upload_file(files: list[UploadFile],
+                             background_tasks: BackgroundTasks,
+                             payload: dict = Depends(jwt.verify_token)):
     directory = payload.get("token")
-
     if not os.path.exists("uploads/" + directory):
         mkdir(f"uploads/{directory}")
         mkdir(f"uploads/{directory}/raw")
@@ -71,76 +72,68 @@ async def create_upload_file(Authentication: Annotated[str | None, Header()], fi
 
 
 @router.get("/uploadfile/filelist")
-async def get_folder(Authentication: Annotated[str | None, Header()]):
-    if Authentication == 'none':
-        token = jwt.create_token()
-        return ReturnResult(200, "success", {'files_attributes': [], 'token': token})
-    if not jwt.verify_token(Authentication):
-        token = jwt.create_token()
-        return ReturnResult(200, "success", {'files_attributes': [], 'token': token})
-    else:
-        renewed_token = jwt.renew_token(Authentication)
-        payload = jwt.decode_token(Authentication)
-        directory = payload.get("token")
+async def get_folder(Authorization: Annotated[str | None, Header()]):
+    token = Authorization.split(' ')[1]
+    try:
+        print(token)
+        jose.jwt.decode(token, setting.SECRET_KEY)
+    except Exception as e:
+        print(e)
+        return ReturnResult(200, "success", {'files_attributes': [], 'token': jwt.create_token()})
+    renewed_token = jwt.renew_token(token)
+    payload = jwt.decode_token(token)
+    directory = payload.get("token")
 
-        files_attributes_global = files_attributes_singleton()
-        files_attributes = files_attributes_global.data
-        if directory in files_attributes:
-            with open(f'uploads/{directory}/expire', 'w') as f:
-                expire = {'expire': datetime.now().timestamp() + 60 * 15}
-                json.dump(expire, f)
-            return ReturnResult(200, "success",{'files_attributes': files_attributes.get(directory), 'token': renewed_token})
-        return ReturnResult(200, "success", {'files_attributes': [], 'token': renewed_token})
-        # except Exception as e:
-        #     return ReturnResult(200, "初始化失败", {})
-
+    files_attributes_global = files_attributes_singleton()
+    files_attributes = files_attributes_global.data
+    if directory in files_attributes:
+        with open(f'uploads/{directory}/expire', 'w') as f:
+            expire = {'expire': datetime.now().timestamp() + 60 * 15}
+            json.dump(expire, f)
+        return ReturnResult(200, "success",{'files_attributes': files_attributes.get(directory), 'token': renewed_token})
+    return ReturnResult(200, "success", {'files_attributes': [], 'token': renewed_token})
 
 @router.get("/uploadfile/convert_status")
-async def get_convert_status(Authentication: Annotated[str | None, Header()]):
-    if jwt.verify_token(Authentication):
-        payload = jwt.decode_token(Authentication)
-        directory = payload.get("token")
-        files_attributes_global = files_attributes_singleton()
+async def get_convert_status(payload: dict = Depends(jwt.verify_token)):
+    directory = payload.get("token")
+    files_attributes_global = files_attributes_singleton()
+    files_attributes = files_attributes_global.data.get(directory)
+
+    converting_filenames = []
+    for file_attributes in files_attributes:
+        if file_attributes.convert_state == "processing":
+            converting_filenames.append(file_attributes.filename)
+    if len(converting_filenames) == 0:
+        return ReturnResult(200, "success", {})  # if no processing files, return success
+
+    start_unix_timestamp = datetime.now().timestamp()
+    while True:
+        await sleep(0.01)
+        if datetime.now().timestamp() - start_unix_timestamp > 120:
+            return ReturnResult(200, "timeout", {})
         files_attributes = files_attributes_global.data.get(directory)
-
-        converting_filenames = []
         for file_attributes in files_attributes:
-            if file_attributes.convert_state == "processing":
-                converting_filenames.append(file_attributes.filename)
-        if len(converting_filenames) == 0:
-            return ReturnResult(200, "success", {})  # if no processing files, return success
-
-        start_unix_timestamp = datetime.now().timestamp()
-        while True:
-            await sleep(0.01)
-            if datetime.now().timestamp() - start_unix_timestamp > 120:
-                return ReturnResult(200, "timeout", {})
-            files_attributes = files_attributes_global.data.get(directory)
-            for file_attributes in files_attributes:
-                for converting_filename in converting_filenames:
-                    if file_attributes.filename == converting_filename:
-                        if file_attributes.convert_state == "success":
-                            return ReturnResult(200, "success", {})
-                        if file_attributes.convert_state == 'error':
-                            return ReturnResult(200, "success", {})
-    return ReturnResult(200, "success", {})
+            for converting_filename in converting_filenames:
+                if file_attributes.filename == converting_filename:
+                    if file_attributes.convert_state == "success":
+                        return ReturnResult(200, "success", {})
+                    if file_attributes.convert_state == 'error':
+                        return ReturnResult(200, "success", {})
 
 
 @router.post("/uploadfile/remove")
-async def remove_file(remove_filename: RemoveFilename, Authentication: Annotated[str | None, Header()]):
-    if jwt.verify_token(Authentication):
-        payload = jwt.decode_token(Authentication)
-        directory = payload.get("token")
-        converted_filename = remove_filename.filename.rsplit(".", 1)[0] + ".pdf"
+async def remove_file(remove_filename: RemoveFilename, payload: dict = Depends(jwt.verify_token)):
+    directory = payload.get("token")
+    converted_filename = remove_filename.filename.rsplit(".", 1)[0] + ".pdf"
 
-        files_attributes_global = files_attributes_singleton()
-        files_attributes = files_attributes_global.data.get(directory)
-        for file_attributes in files_attributes:
-            if file_attributes.filename == remove_filename.filename:
-                files_attributes.remove(file_attributes)
-                break
-        files_attributes_global.data.update({directory: files_attributes})
-        return ReturnResult(200, "success", {})
+    files_attributes_global = files_attributes_singleton()
+    files_attributes = files_attributes_global.data.get(directory)
+    for file_attributes in files_attributes:
+        if file_attributes.filename == remove_filename.filename:
+            files_attributes.remove(file_attributes)
+            break
+    files_attributes_global.data.update({directory: files_attributes})
+    return ReturnResult(200, "success", {})
 
 
 @router.get("/preview/{authentication}/{filename}")

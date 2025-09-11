@@ -73,7 +73,7 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
                     price)
 
 
-    out_trade_no = datetime.now().strftime('%Y%m%d%H%M%S%f')
+    out_trade_no = 'ALIPAY_' + datetime.now().strftime('%Y%m%d%H%M%S%f')
     bill_attributes = {'files_attributes': request_body_attributes, 'total_price': float(price.format()),
                        'out_trade_no': out_trade_no, 'expiry': time.time() + 60 * 60 * 3}
 
@@ -104,6 +104,7 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
     model.timeout_express = '15m'
     to_encode = {'out_trade_no': bill_attributes.get('out_trade_no')}
     encode_jwt = encode(to_encode, SECRET_KEY, algorithm='HS256')
+    print(encode_jwt)
     model.body = encode_jwt
 
     request = AlipayTradePrecreateRequest(biz_model=model)
@@ -147,9 +148,11 @@ async def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotat
     if not jwt.verify_token(body):
         return {"message": "error"}
     jwt_payload = jwt.decode_token(body)
+    print(jwt_payload.get('out_trade_no'))
+    print(out_trade_no)
     if not jwt_payload.get('out_trade_no') == out_trade_no:
         return {"message": "error"}
-
+    print(1)
     bills_attributes_global = bills_attributes_singleton()
     if out_trade_no in bills_attributes_global.data:
         bill_attributes = bills_attributes_global.data.get(out_trade_no)

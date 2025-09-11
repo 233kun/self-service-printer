@@ -7,27 +7,6 @@ import PayButton from "@/components/PayButton.vue";
 import PriceCounter from "@/components/PriceCounter.vue";
 import {IconFiles, IconPhoto, IconBook, IconBrandAndroid} from '@tabler/icons-vue';
 
-// ** deprecated **
-
-// async function getToken() {
-//   let token
-//   await axios.get(window.config.baseURL + "/token/generation").then(
-//       res => {
-//         token = res.data.data.token
-//       }
-//   )
-//   return token
-// }
-// const renewToken = async (oldToken) => {
-//   let token
-//   await axios.post(window.config.baseURL + "/token/renew", {
-//     "token": oldToken
-//   }).then(res => {
-//     token = res.data.data.token
-//   })
-//   return token
-// }
-
 const checkToken = () => {
   if (window.localStorage.getItem("token") == null) {
     getToken().then(
@@ -55,7 +34,7 @@ const getFilesAttributes = async (token) => {
   let files_attributes;
   await axios.get(window.config.baseURL + "/uploadfile/filelist", {
     headers: {
-      "Authentication": authentication
+      "Authorization": 'Bearer ' + authentication
     }
   }).then(res => {
     if (res.data.message !== 'success') {
@@ -75,7 +54,7 @@ const lPollConvertStatus = async (token) => { //long polling
   let message
   await axios.get(window.config.baseURL + '/uploadfile/convert_status', {
     headers: {
-      "Authentication": token
+      "Authorization": 'Bearer ' + token
     }
   }).then(res => {
     message = res.data.message
@@ -128,7 +107,7 @@ const handleFormFilesInput = () => { //handleFileUpload
     headers: {
       'Accept': 'application/json',
       'Content-Type': "multipart/form-data",
-      'Authentication': window.localStorage.getItem("token")
+      'Authorization': 'Bearer ' + window.localStorage.getItem("token")
     }
   }).then(
       res => {
