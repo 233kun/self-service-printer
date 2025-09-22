@@ -124,6 +124,8 @@ def exec_printing_linux(job_attributes):
         return None
 
 if __name__ == "__main__":
+    if not os.path.exists('downloads'):
+        os.makedirs('downloads')
     while True:
         sleep(1)
         job_attributes = get_new_job()

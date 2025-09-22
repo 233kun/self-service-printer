@@ -1,4 +1,5 @@
 import logging
+import os.path
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -27,7 +28,10 @@ async def lifespan(app: FastAPI):
     yield
     ml_models.clear()
 
-
+if not os.path.exists('uploads'):
+    os.makedirs('uploads')
+if not os.path.exists('pending_files'):
+    os.makedirs('pending_files')
 app = FastAPI(lifespan=lifespan)
 app.include_router(user.router)
 app.include_router(pay.router)
