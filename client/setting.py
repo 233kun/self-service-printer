@@ -1,0 +1,3 @@
+SERVER_HOST = ''
+PRINTER_URL = ''
+SECRET_KEY = ''
