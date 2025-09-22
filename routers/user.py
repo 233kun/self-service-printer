@@ -138,9 +138,13 @@ async def remove_file(remove_filename: RemoveFilename, payload: dict = Depends(j
 
 @router.get("/preview/{authentication}/{filename}")
 async def preview_pdf(authentication, filename):
-    if not jwt.verify_token(authentication):
+    try:
+        jose.jwt.decode(authentication, setting.SECRET_KEY)
+    except:
         return {"message": "fail"}
     payload = jwt.decode_token(authentication)
     directory = payload.get("token")
     converted_filename = filename.rsplit(".", 1)[0] + ".pdf"
+    if not os.path.exists(f"uploads/{directory}/converted/{converted_filename}"):
+        return {"message": "file not found"}
     return FileResponse(f"uploads/{directory}/converted/{converted_filename}")
