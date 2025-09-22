@@ -75,10 +75,8 @@ async def create_upload_file(files: list[UploadFile],
 async def get_folder(Authorization: Annotated[str | None, Header()]):
     token = Authorization.split(' ')[1]
     try:
-        print(token)
         jose.jwt.decode(token, setting.SECRET_KEY)
     except Exception as e:
-        print(e)
         return ReturnResult(200, "success", {'files_attributes': [], 'token': jwt.create_token()})
     renewed_token = jwt.renew_token(token)
     payload = jwt.decode_token(token)
