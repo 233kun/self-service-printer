@@ -19,6 +19,7 @@ from alipay.aop.api.request.AlipayTradePrecreateRequest import (
 )
 
 import jwt
+import jose
 import print_queue
 from global_vars.files_attributes_singleton import files_attributes_singleton
 from setting import SERVER_HOST, APP_ID, ALIPAY_PRIVATE_KEY, ALIPAY_PUBLIC_KEY, SECRET_KEY
@@ -145,14 +146,13 @@ async def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotat
                      body: Annotated[str, Form()]):
     if not trade_status == 'TRADE_SUCCESS':
         return {"message": "error"}
-    if not jwt.verify_token(body):
+    try:
+        jwt_payload = jose.jwt.decode(body, SECRET_KEY)
+    except Exception as e:
+        print(e)
         return {"message": "error"}
-    jwt_payload = jwt.decode_token(body)
-    print(jwt_payload.get('out_trade_no'))
-    print(out_trade_no)
     if not jwt_payload.get('out_trade_no') == out_trade_no:
         return {"message": "error"}
-    print(1)
     bills_attributes_global = bills_attributes_singleton()
     if out_trade_no in bills_attributes_global.data:
         bill_attributes = bills_attributes_global.data.get(out_trade_no)
