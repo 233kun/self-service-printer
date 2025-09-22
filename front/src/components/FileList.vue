@@ -55,7 +55,7 @@ const removeFile = (filename, index) => {
   }, {
     headers: {
       'Accept': 'application/json',
-      "Authentication": window.localStorage.getItem("token")
+      'Authorization': 'Bearer ' + window.localStorage.getItem("token")
     }
   }).then(res => {
     if (res.data.message === "success") {
@@ -67,6 +67,7 @@ const removeFile = (filename, index) => {
     }
   }).catch(error => {
         ElMessage.error("删除失败")
+        console.log(error)
       }
   )
 }
