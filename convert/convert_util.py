@@ -63,8 +63,7 @@ class ConvertUtil(object):
         output_filename = filename.rsplit(".", 1)[0]
         try:
             with open(f"uploads/{directory}/converted/{output_filename}.pdf", "wb") as f:
-                f.write(img2pdf.convert(f"uploads/{directory}/raw/{filename}", layout_fun=layout_fun,
-                                        rotation=img2pdf.Rotation.ifvaild))
+                f.write(img2pdf.convert(f"uploads/{directory}/raw/{filename}", layout_fun=layout_fun))
 
                 files_attributes = files_attributes_global.data.get(directory)
                 for file_attributes in files_attributes:
