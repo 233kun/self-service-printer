@@ -1,6 +1,6 @@
 window.config = {
-  baseURL: '',
-  price: ,
-  discountedPrice: 
+  baseURL: '',  // 后端地址
+  price: ,  // 双面打印价格
+  discountedPrice:   // 单面打印价格
 }
 

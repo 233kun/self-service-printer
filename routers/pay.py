@@ -110,7 +110,7 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
 
     request = AlipayTradePrecreateRequest(biz_model=model)
 
-    request.notify_url = f"https://{SERVER_HOST}/pay/return"
+    request.notify_url = f"{SERVER_HOST}/pay/return"
     response_content = False
     try:
         response_content = client.execute(request)
