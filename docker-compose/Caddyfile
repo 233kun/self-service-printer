@@ -1,0 +1,8 @@
+{$DOMAIN}:2000 {
+
+  reverse_proxy http://printer-front:2000
+}
+
+{$DOMAIN}:8000 {
+  reverse_proxy http://printer-backend:9000
+}

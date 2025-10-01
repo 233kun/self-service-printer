@@ -1,0 +1,46 @@
+services:
+  caddy:
+    image: caddy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+      - "2000:2000"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    environment:
+      - DOMAIN=  # 设置主域名，如: example.com
+      - EMAIL=  # Let's Encrypt证书注册邮箱
+    networks:
+      - printer
+    depends_on:
+      - printer-front
+      - printer-backend
+
+  printer-front:
+    image: 233kun/printer-front
+    networks:
+      - printer
+    environment:
+        - BASEURL=  # 后端 API 完整地址，如: https://example.com:8000
+        - PRICE=  # 单面打印价格
+        - DISCOUNTEDPRICE=  # 双面打印价格
+        - DOMAIN=:2000
+        - EMAIL=internal
+
+  printer-backend:
+    image: 233kun/printer-backend
+    networks:
+      - printer
+    environment:
+        - SECRET_KEY=  # 应用的密钥，用于加密会话等（建议使用强随机字符串）
+        - SERVER_HOST=  # 后端 API 完整地址，支付回调地址，如: example.com
+        - APP_ID=  # 支付宝单面付应用ID
+        - ALIPAY_PUBLIC_KEY=  # 支付宝当面付公钥
+        - ALIPAY_PRIVATE_KEY=  # 支付宝当面付
+        - ACCEPT_WPS_EULA=  # 请阅读 https://privacy.wps.cn/policies/eula/personal-wps-office WPS最终用户许可协议，填 true 表示接受
+        - DOMAIN=:9000
+        - EMAIL=internal
+
+networks:
+  printer:
+    driver: bridge

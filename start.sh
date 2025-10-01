@@ -20,7 +20,7 @@ check_empty_env() {
 check_empty_env
 
 sed "s|SECRET_KEY = ''|SECRET_KEY = '$SECRET_KEY'|" setting.py.bak >setting.py.tmp
-sed -i "s|SERVER_HOST = ''|SERVER_HOST = '$SECRET_HOST'|" setting.py.tmp
+sed -i "s|SERVER_HOST = ''|SERVER_HOST = '$SERVER_HOST'|" setting.py.tmp
 sed -i "s|APP_ID = ''|APP_ID = '$APP_ID'|" setting.py.tmp
 sed -i "s|ALIPAY_PUBLIC_KEY = ''|ALIPAY_PUBLIC_KEY = '$ALIPAY_PUBLIC_KEY'|" setting.py.tmp
 sed -i "s|ALIPAY_PRIVATE_KEY = ''|ALIPAY_PRIVATE_KEY = '$ALIPAY_PRIVATE_KEY'|" setting.py.tmp

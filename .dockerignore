@@ -1,0 +1,14 @@
+.*
+*/.*
+__pycache__
+client/
+front/
+uploads/
+pending_files/
+docker-compose/
+Dockerfile
+LICENSE
+README.md
+setting.py
+start.bat
+test_main.http
