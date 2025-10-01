@@ -32,7 +32,7 @@ if not os.path.exists('uploads'):
     os.makedirs('uploads')
 if not os.path.exists('pending_files'):
     os.makedirs('pending_files')
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 app.include_router(user.router)
 app.include_router(pay.router)
 app.include_router(printer.router)
@@ -48,4 +48,4 @@ app.add_middleware(
 logging.getLogger("uvicorn.access").addFilter(GetJobsAccessLogFilter())
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
