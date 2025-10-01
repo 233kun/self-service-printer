@@ -4,7 +4,7 @@ from datetime import datetime
 
 from dinero import Dinero
 from dinero.currencies import CNY
-from fastapi import APIRouter, Form, Header
+from fastapi import APIRouter, Form, Header, Depends
 from starlette.responses import HTMLResponse
 from typing_extensions import Annotated
 from jose.jwt import encode
@@ -30,8 +30,7 @@ router = APIRouter()
 
 
 @router.post("/pay/bill/create")
-async def create_bill(request_body: FileList, Authentication: Annotated[str | None, Header()]):
-    payload = jwt.decode_token(Authentication)
+async def create_bill(request_body: FileList, payload: dict = Depends(jwt.verify_token)):
     directory = payload.get("token")
     expire = payload.get("exp")
     request_body_attributes = request_body.fileList
@@ -105,7 +104,6 @@ async def create_bill(request_body: FileList, Authentication: Annotated[str | No
     model.timeout_express = '15m'
     to_encode = {'out_trade_no': bill_attributes.get('out_trade_no')}
     encode_jwt = encode(to_encode, SECRET_KEY, algorithm='HS256')
-    print(encode_jwt)
     model.body = encode_jwt
 
     request = AlipayTradePrecreateRequest(biz_model=model)
@@ -149,7 +147,6 @@ async def pay_return(trade_status: Annotated[str, Form()], out_trade_no: Annotat
     try:
         jwt_payload = jose.jwt.decode(body, SECRET_KEY)
     except Exception as e:
-        print(e)
         return {"message": "error"}
     if not jwt_payload.get('out_trade_no') == out_trade_no:
         return {"message": "error"}

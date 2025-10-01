@@ -33,7 +33,6 @@ const discountedPrice = computed({
       let pageNumber = endPage.sub(startPage).plus(1)
       if (props.fileList[file].print_side === "one-sided") {
          price = pageNumber.mul(window.config.price).mul(props.fileList[file].print_copies).add(price)
-        console.log(price.toNumber())
         continue
       }
       if (pageNumber % 2 === 0) {

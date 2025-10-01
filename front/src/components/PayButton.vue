@@ -23,7 +23,7 @@ const pay = () => {
     headers: {
       'Accept': 'application/json',
       "Content-Type": "application/json",
-      'Authentication': window.localStorage.getItem("token")
+      'Authorization': "Bearer " + window.localStorage.getItem("token")
     }
   }).then(res => {
     if (res.data.message !== 'success') {
