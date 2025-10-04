@@ -8,3 +8,8 @@ services:
       - SECRET_KEY=  #  后端应用密钥
     ports:
       - "631:631"
+    volumes:
+      - cups-config:/etc/cups
+
+volumes:
+  cups-config:
