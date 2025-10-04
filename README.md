@@ -47,8 +47,6 @@
 `git clone https://github.com/233kun/self-service-printer`
 `cd self-service-printer/docker-compose/client`
 
-`nano docker-compose.yml`
-
 #### 根据注释修改参数并启动
 
 ⚠️ 如果你使用的打印机不支持网络打印仅USB打印，请查看 `https://hub.docker.com/r/olbat/cupsd` 修改docker-compose.yml文件或手动部署
