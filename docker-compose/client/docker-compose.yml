@@ -1,6 +1,6 @@
 services:
   printer:
-    image: 233kun/printer-client
+    image: 233kun/printer-client:latest
     container_name: printer
     environment:
       - SERVER_HOST=  # 后端 API 完整地址，如: https://example.com:8000
