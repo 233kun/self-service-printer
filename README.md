@@ -1,4 +1,5 @@
 # 自助印
+
 ## 简介
 
 一个让你的打印机变成自助上传文件的打印机的项目
@@ -12,8 +13,8 @@
 
 ### 前置需求
 
-- 一台支持网络打印的打印机（参考 https://www.pwg.org/printers ）
-- 运行内存2G及以上的云服务器 
+- 一台支持网络打印的打印机（参考 <https://www.pwg.org/printers> ）
+- 运行内存2G及以上的云服务器
 - 域名  
 - 开通支付宝当面付(请自行查找开通)
 
@@ -45,6 +46,8 @@
 `sudo apt update && sudo apt install -y docker.io docker-compose`
 `git clone https://github.com/233kun/self-service-printer`
 `cd self-service-printer/docker-compose/client`
+
+`nano docker-compose.yml`
 
 #### 根据注释修改参数并启动
 
@@ -85,4 +88,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
